@@ -111,8 +111,8 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
+    await queryInterface.dropTable('gamesUsers');
     await queryInterface.dropTable('users');
     await queryInterface.dropTable('games');
-    await queryInterface.dropTable('gamesUsers');
   },
 };
