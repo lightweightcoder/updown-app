@@ -32,7 +32,14 @@ export default function routes(app) {
   // register a user
   app.post('/register', UsersController.register);
 
-  // main page, also the gameplay page
+  // home page
+  app.get('/home', checkAuth, (req, res) => {
+    console.log('render home page');
+
+    res.render('home');
+  });
+
+  // gameplay page
   // found bug where checkAuth does not run
   app.get('/', checkAuth, (req, res) => {
     res.sendFile(resolve('js/dist', 'index.html'));
