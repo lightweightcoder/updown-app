@@ -22,6 +22,16 @@ export default function routes(app) {
   // accept login form request
   app.post('/login', UsersController.login);
 
+  // registration page
+  app.get('/register', (req, res) => {
+    console.log('render a registration form');
+
+    res.render('register');
+  });
+
+  // register a user
+  app.post('/register', UsersController.register);
+
   // main page, also the gameplay page
   // found bug where checkAuth does not run
   app.get('/', checkAuth, (req, res) => {
