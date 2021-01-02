@@ -23,6 +23,7 @@ export default function routes(app) {
   app.post('/login', UsersController.login);
 
   // main page, also the gameplay page
+  // found bug where checkAuth does not run
   app.get('/', checkAuth, (req, res) => {
     res.sendFile(resolve('js/dist', 'index.html'));
   });
