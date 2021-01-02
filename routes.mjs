@@ -6,11 +6,13 @@ import checkAuthMiddleware from './lib/check-auth.mjs';
 
 // import controllers
 import users from './controllers/users.mjs';
+import games from './controllers/games.mjs';
 
 export default function routes(app) {
   // pass in db for all callbacks in controllers
   const checkAuth = checkAuthMiddleware(db);
   const UsersController = users(db);
+  const GamesController = games(db);
 
   // login page
   app.get('/login', (req, res) => {
@@ -38,6 +40,9 @@ export default function routes(app) {
 
     res.render('home');
   });
+
+  // create game page
+  app.get('/games/new', checkAuth, GamesController.newGame);
 
   // gameplay page
   // found bug where checkAuth does not run

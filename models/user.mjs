@@ -22,6 +22,11 @@ export default function userModel(sequelize, DataTypes) {
       allowNull: false,
       type: DataTypes.STRING,
     },
+    hasOngoingGame: {
+      allowNull: false,
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE,

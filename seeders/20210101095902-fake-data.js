@@ -39,6 +39,14 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        email: 'akira@akira.com',
+        password: 'akira',
+        hashedPassword: getHash('akira'),
+        name: 'akira',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
 
     await queryInterface.bulkInsert(
