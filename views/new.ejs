@@ -36,7 +36,7 @@
           <h4>Choose Players</h4>
         </div>
         <div class="col-12 col-md-8 col-lg-6 d-flex justify-content-center" id="form-container">
-          <div class="form" action="/register" method="POST">
+          <form action="/games" method="POST">
             <!-- create checkboxes of players, 3 per row -->
             <% for (let i = 0; i < availablePlayers.length; i += 1) { %>
             <div class="form-row">
@@ -44,7 +44,7 @@
                 <% if (i+j < availablePlayers.length) { %> 
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="checkbox" id="<%= availablePlayers[i+j].id %>" name="playerIds" value="<%= availablePlayers[i+j].id %>">
-                  <label class="form-check-label" for="<%= availablePlayers[i+j].id %>"><%= availablePlayers[i+j].name %></label>
+                  <label class="form-check-label" for="<%= availablePlayers[i+j].id %>"><%= availablePlayers[i+j].username %></label>
                 </div>
                 <% }; %> 
               <% }; %>   
@@ -53,7 +53,7 @@
             <% }; %>
 
             <input type="submit" value="start game" class="btn btn-primary" />
-          </div>
+          </form>
         </div>
       </div>
     </div>

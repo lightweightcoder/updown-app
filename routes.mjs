@@ -44,6 +44,9 @@ export default function routes(app) {
   // create game page
   app.get('/games/new', checkAuth, GamesController.newGame);
 
+  // create a game
+  app.post('/games', checkAuth, GamesController.create);
+
   // gameplay page
   app.get('/', checkAuth, (req, res) => {
     res.sendFile(resolve('js/dist', 'index.html'));
