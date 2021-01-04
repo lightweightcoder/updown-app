@@ -5,3 +5,14 @@ body {
 #game-title {
   text-align: center;
 }
+
+#numOfCardsTable {
+  h5,
+  p {
+    text-align: center;
+  }
+
+  .table-col {
+    border-style: solid;
+  }
+}
