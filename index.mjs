@@ -10,7 +10,11 @@ app.use(cookieParser());
 
 app.set('view engine', 'ejs');
 
+// allow express to recognise incoming request object as strings or arrays
 app.use(express.urlencoded({ extended: false }));
+
+// allow express to recognise incoming request object as a JSON object
+app.use(express.json());
 
 app.use(express.static('public'));
 
