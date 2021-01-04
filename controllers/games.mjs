@@ -57,11 +57,13 @@ export default function games(db) {
       // then concatenate playerIds and loggedInUserId into an array
       if (typeof playerIds === 'string') {
         playerIds = [loggedInUserId, playerIds];
-        console.log('playerIds', playerIds);
       } else if (typeof playerIds === 'object') {
         playerIds = [loggedInUserId, ...playerIds];
-        console.log('playerIds', playerIds);
       }
+
+      // make items for a new game: a shuffled deck, playerhands, draw pile and discard pile card
+      const newGameItems = makeNewGameItems(playerIds.length);
+      console.log('newGameItems is', newGameItems);
     } catch (error) {
       console.log('create game error: ', error);
       // send error to browser
