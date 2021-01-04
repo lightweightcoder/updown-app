@@ -73,8 +73,8 @@ export default function users(db) {
       res.cookie('userId', user.id);
       res.cookie('loggedInHash', loggedInHash);
 
-      // redirect to gameplay route (main page route)
-      res.redirect('/');
+      // redirect to home route
+      res.redirect('/home');
     } catch (error) {
       if (error instanceof UniqueConstraintError) {
         // email is not unique
