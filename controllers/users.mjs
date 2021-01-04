@@ -41,8 +41,13 @@ export default function users(db) {
         res.cookie('userId', user.id);
         res.cookie('loggedInHash', loggedInHash);
 
-        // redirect to gameplay route (main page route)
-        res.redirect('/');
+        // if user has an ongoing game, redirect to gameplay (root) route
+        // else user has no ongoing game, redirect to home route
+        if (user.hasOngoingGame === true) {
+          res.redirect('/');
+        } else {
+          res.redirect('/home');
+        }
       }
     } catch (error) {
       console.log(error);
