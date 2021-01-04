@@ -6,7 +6,7 @@ export default function userModel(sequelize, DataTypes) {
       primaryKey: true,
       type: DataTypes.INTEGER,
     },
-    email: {
+    username: {
       allowNull: false,
       type: DataTypes.STRING,
     },
@@ -15,10 +15,6 @@ export default function userModel(sequelize, DataTypes) {
       type: DataTypes.STRING,
     },
     hashedPassword: {
-      allowNull: false,
-      type: DataTypes.STRING,
-    },
-    name: {
       allowNull: false,
       type: DataTypes.STRING,
     },

@@ -24,26 +24,23 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const usersList = [
       {
-        email: 'kai@kai.com',
+        username: 'kai',
         password: 'kai',
         hashedPassword: getHash('kai'),
-        name: 'kai',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        email: 'alvin@alvin.com',
+        username: 'alvin',
         password: 'alvin',
         hashedPassword: getHash('alvin'),
-        name: 'alvin',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
-        email: 'akira@akira.com',
+        username: 'akira',
         password: 'akira',
         hashedPassword: getHash('akira'),
-        name: 'akira',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

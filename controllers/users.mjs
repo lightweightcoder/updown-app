@@ -11,14 +11,14 @@ export default function users(db) {
     const templateData = {};
 
     try {
-      const emailInput = req.body.email;
+      const usernameInput = req.body.username;
       const passwordInput = req.body.password;
       const hashedPasswordInput = getHash(passwordInput);
 
       // try to find a user
       const user = await db.User.findOne(
         {
-          where: { email: emailInput, hashedPassword: hashedPasswordInput },
+          where: { username: usernameInput, hashedPassword: hashedPasswordInput },
         },
       );
 
@@ -27,7 +27,7 @@ export default function users(db) {
         console.log('user not found');
 
         // add message to inform user of invalid email/password
-        templateData.invalidMessage = 'Sorry you have keyed in an incorrect email/password';
+        templateData.invalidMessage = 'Sorry you have keyed in an incorrect username/password';
 
         // render the login form
         res.render('login', templateData);
@@ -55,17 +55,15 @@ export default function users(db) {
     console.log('post request to register came in!');
 
     try {
-      const emailInput = req.body.email;
+      const usernameInput = req.body.username;
       const passwordInput = req.body.password;
       const hashedPasswordInput = getHash(passwordInput);
-      const nameInput = req.body.name;
 
       // try to create a user
       const user = await db.User.create({
-        email: emailInput,
+        username: usernameInput,
         password: passwordInput,
         hashedPassword: hashedPasswordInput,
-        name: nameInput,
       });
 
       // generate a hashed userId
@@ -83,9 +81,9 @@ export default function users(db) {
         console.log('SORRY UNIQUE ERROR');
         console.log(error);
 
-        const invalidEmailMsg = 'The email you entered already exists.';
+        const invalidUsernameMsg = 'The username you entered already exists.';
 
-        res.render('register', { invalidEmailMsg });
+        res.render('register', { invalidUsernameMsg });
       } else if (error instanceof ValidationError) {
         console.log('SORRY VALIDATION ERROR');
         console.log(error);
