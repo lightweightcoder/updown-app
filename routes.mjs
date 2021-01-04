@@ -45,7 +45,6 @@ export default function routes(app) {
   app.get('/games/new', checkAuth, GamesController.newGame);
 
   // gameplay page
-  // found bug where checkAuth does not run
   app.get('/', checkAuth, (req, res) => {
     res.sendFile(resolve('js/dist', 'index.html'));
   });
