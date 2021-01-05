@@ -19,12 +19,15 @@ export default function gameModel(sequelize, DataTypes) {
         key: 'id',
       },
     },
-    currentPlayerNum: {
+    currentPlayerId: {
       type: DataTypes.INTEGER,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
-    status: {
-      allowNull: false,
-      type: DataTypes.STRING,
+    isOngoing: {
+      type: DataTypes.BOOLEAN,
     },
     createdAt: {
       allowNull: false,

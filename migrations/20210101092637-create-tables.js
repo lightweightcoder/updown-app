@@ -55,13 +55,17 @@ module.exports = {
           key: 'id',
         },
       },
-      currentPlayerNum: {
+      currentPlayerId: {
         type: Sequelize.INTEGER,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
       },
-      status: {
-        // ongoing or cancelled
+      isOngoing: {
         allowNull: false,
-        type: Sequelize.STRING,
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
       },
       createdAt: {
         allowNull: false,

@@ -30,7 +30,6 @@ export default function gamesUserModel(sequelize, DataTypes) {
       },
       score: {
         type: DataTypes.INTEGER,
-        defaultValue: 0,
       },
     },
     {
