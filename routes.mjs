@@ -49,6 +49,16 @@ export default function routes(app) {
 
   // gameplay page
   app.get('/', checkAuth, (req, res) => {
-    res.sendFile(resolve('js/dist', 'index.html'));
+    // redirect user to home page if user has no ongoing game
+    if (req.user.hasOngoingGame === false) {
+      console.log('user has no ongoing game, redirecting to home...');
+      res.redirect('/home');
+    } else {
+      console.log('sending html file');
+      res.sendFile(resolve('js/dist', 'index.html'));
+    }
   });
+
+  // get game data of a user's ongoing game
+  app.get('/games/one', checkAuth, GamesController.show);
 }

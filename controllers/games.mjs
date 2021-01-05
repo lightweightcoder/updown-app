@@ -187,10 +187,20 @@ export default function games(db) {
     console.log('get request to find a user\'s ongoing game data came in');
 
     try {
-      // get user id of the user
-      const loggedInUserId = req.user.id;
+      console.log('user instance', req.user);
 
-      // find the ongoing game data of the user
+      // find the ongoing game data and gameUser data of the user
+      const gameInstances = await req.user.getGames({
+        where: {
+          isOngoing: true,
+        },
+      });
+
+      // store the data into variables
+      const gameInstance = gameInstances[0];
+      const gameUserInstance = gameInstances[0].gamesUser;
+      console.log('gameInstance', gameInstances[0]);
+      console.log('gamesUser is', gameInstances[0].gamesUser);
     } catch (error) {
       console.log('show error: ', error);
       // send error to browser
@@ -203,5 +213,6 @@ export default function games(db) {
   return {
     newGame,
     create,
+    show,
   };
 }
