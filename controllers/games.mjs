@@ -201,6 +201,56 @@ export default function games(db) {
       const gameUserInstance = gameInstances[0].gamesUser;
       console.log('gameInstance', gameInstances[0]);
       console.log('gamesUser is', gameInstances[0].gamesUser);
+
+      // query DB for user of the current turn
+      const currentTurnPlayerInstance = await db.User.findOne({
+        where: {
+          id: gameInstance.currentPlayerId,
+        },
+      });
+
+      // query DB for player number, names, handsize and score for table on gameplay page
+      const playersInfo = await db.GamesUser.findAll({
+        where: {
+          gameId: gameInstance.id,
+        },
+        order: [
+          ['playerNum', 'ASC'],
+        ],
+        include: db.User,
+      });
+
+      console.log('playersInfo is', playersInfo);
+      console.log('playersInfo[0].user.username is', playersInfo[0].user.username);
+
+      // array to store player number, names, handsize and score
+      const tableInfo = [];
+
+      // populate the table info
+      for (let i = 0; i < playersInfo.length; i += 1) {
+        const tableInfoItem = {
+          playerNum: playersInfo[i].playerNum,
+          username: playersInfo[i].user.username,
+          handSize: playersInfo[i].hand.length,
+          score: playersInfo[i].score,
+        };
+
+        tableInfo.push(tableInfoItem);
+      }
+
+      console.log('tableInfo is', tableInfo);
+
+      // game data to send to response
+      const gameData = {
+        username: req.user.username,
+        currentPlayerUsername: currentTurnPlayerInstance.username,
+        discardPileCard: gameInstance.discardPileCard,
+        handCards: gameUserInstance.hand,
+        tableData: tableInfo,
+      };
+
+      // send the response
+      res.send(gameData);
     } catch (error) {
       console.log('show error: ', error);
       // send error to browser
