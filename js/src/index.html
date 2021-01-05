@@ -20,7 +20,6 @@
     <div class="container">
       <div class="row">
         <div class="col-12 d-flex flex-column align-items-end" id="session-col">
-          <p>session info</p>
         </div>
       </div>
     </div>
@@ -29,7 +28,7 @@
     <div class="container">
       <div class="row">
         <div class="col d-flex justify-content-center">
-          <h1 id="game-title">game title</h1>
+          <h1 id="game-title">UpDown</h1>
         </div>
       </div>
     </div>
@@ -37,8 +36,7 @@
     <!-- messages on game state -->
     <div class="container">
       <div class="row">
-        <div class="col">
-          <p>messages</p>
+        <div class="col" id="message-col">
         </div>
       </div>
     </div>
@@ -46,11 +44,9 @@
     <!-- draw and discard pile -->
     <div class="container">
       <div class="row">
-        <div class="col-5">
-          <p>cards in draw pile</p>
+        <div class="col-5" id="drawPile-col">
         </div>
-        <div class="col-5">
-          <p>picture of top card in discard pile</p>
+        <div class="col-5" id="discardPileCard-col">
         </div>
       </div>
     </div>
@@ -81,12 +77,9 @@
     <div class="container">
       <div class="row d-flex justify-content-center">
         <div class="col-12">
-          <div class="container" id="numOfCardsTable">
+          <div class="container" id="gameStatsTable-cont">
             <div class="row">
-              <div class="col-1 table-col">
-                <h5>Player No.</h5>
-              </div>
-              <div class="col-5 table-col">
+              <div class="col-6 table-col">
                 <h5>Username</h5>
               </div>
               <div class="col-3 table-col">

@@ -187,8 +187,6 @@ export default function games(db) {
     console.log('get request to find a user\'s ongoing game data came in');
 
     try {
-      console.log('user instance', req.user);
-
       // find the ongoing game data and gameUser data of the user
       const gameInstances = await req.user.getGames({
         where: {
@@ -199,8 +197,6 @@ export default function games(db) {
       // store the data into variables
       const gameInstance = gameInstances[0];
       const gameUserInstance = gameInstances[0].gamesUser;
-      console.log('gameInstance', gameInstances[0]);
-      console.log('gamesUser is', gameInstances[0].gamesUser);
 
       // query DB for user of the current turn
       const currentTurnPlayerInstance = await db.User.findOne({
@@ -220,16 +216,12 @@ export default function games(db) {
         include: db.User,
       });
 
-      console.log('playersInfo is', playersInfo);
-      console.log('playersInfo[0].user.username is', playersInfo[0].user.username);
-
       // array to store player number, names, handsize and score
       const tableInfo = [];
 
       // populate the table info
       for (let i = 0; i < playersInfo.length; i += 1) {
         const tableInfoItem = {
-          playerNum: playersInfo[i].playerNum,
           username: playersInfo[i].user.username,
           handSize: playersInfo[i].hand.length,
           score: playersInfo[i].score,
@@ -244,6 +236,7 @@ export default function games(db) {
       const gameData = {
         username: req.user.username,
         currentPlayerUsername: currentTurnPlayerInstance.username,
+        drawPileSize: gameInstance.drawPile.length,
         discardPileCard: gameInstance.discardPileCard,
         handCards: gameUserInstance.hand,
         tableData: tableInfo,
