@@ -176,6 +176,22 @@ export default function games(db) {
     }
   };
 
+  // get game data of a user's ongoing game
+  const show = async (req, res) => {
+    console.log('get request to find a user\'s ongoing game data came in');
+
+    try {
+      // get user id of the user
+      const loggedInUserId = req.user.id;
+
+      // find the ongoing game data of the user
+    } catch (error) {
+      console.log('show error: ', error);
+      // send error to browser
+      res.status(500).send(error);
+    }
+  };
+
   // return all functions we define in an object
   // refer to the routes file above to see this used
   return {
