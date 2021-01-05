@@ -100,7 +100,11 @@ export default function games(db) {
         playerIds = [loggedInUserId, ...playerIds];
       }
 
+      // some variables that will be stored in the database
       let startingPlayerNum = 'none';
+      let playersHands;
+      let drawPile;
+      let discardPileCard;
 
       // if we cant find a current player after an iteration of the while loop below,
       // it means that no player has a playable card even after emptying the drawPile
@@ -109,9 +113,9 @@ export default function games(db) {
         // make items for a new game: a shuffled deck, playerhands, draw pile and discard pile card
         const newGameItems = makeNewGameItems(playerIds.length);
 
-        const { playersHands } = newGameItems;
-        const { drawPile } = newGameItems;
-        let { discardPileCard } = newGameItems;
+        playersHands = newGameItems.playersHands;
+        drawPile = newGameItems.drawPile;
+        discardPileCard = newGameItems.discardPileCard;
 
         // try to get a current player number. The current player has to have a playable card
         startingPlayerNum = getStartingPlayerNum(playersHands, discardPileCard);
@@ -125,13 +129,46 @@ export default function games(db) {
           // eslint-disable-next-line max-len
           startingPlayerNum = getStartingPlayerNum(playersHands, discardPileCard);
         }
-
-        // if a current player number is found
-        if (startingPlayerNum !== 'none') {
-          // create game in db
-          console.log('create game!');
-        }
       }
+
+      // create the game once the starting items have been created
+      // and starting player has been found in the while loop above
+      console.log('create game!');
+
+      const newGameData = {
+        drawPile,
+        discardPileCard,
+        currentPlayerNum: startingPlayerNum,
+        status: 'ongoing',
+      };
+
+      // run the DB INSERT query to create the new game
+      const createdGame = await db.Game.create(newGameData);
+
+      const newGamesUserDatas = [];
+
+      // store the gamesUser data for each player
+      // and run the DB update query to update the hasOngoingGame column in users table to true
+      for (let i = 0; i < playerIds.length; i += 1) {
+        const newGamesUserData = {
+          gameId: createdGame.id,
+          userId: playerIds[i],
+          hand: playersHands[i],
+          playerNum: i + 1,
+        };
+
+        newGamesUserDatas.push(newGamesUserData);
+
+        // eslint-disable-next-line no-await-in-loop
+        await db.User.update({ hasOngoingGame: true }, {
+          where: {
+            id: playerIds[i],
+          },
+        });
+      }
+
+      // run the DB insert query to create join table data
+      await db.GamesUser.bulkCreate(newGamesUserDatas);
     } catch (error) {
       console.log('create game error: ', error);
       // send error to browser
