@@ -55,12 +55,8 @@ module.exports = {
           key: 'id',
         },
       },
-      currentPlayerId: {
+      currentPlayerNum: {
         type: Sequelize.INTEGER,
-        references: {
-          model: 'users',
-          key: 'id',
-        },
       },
       status: {
         // ongoing or cancelled

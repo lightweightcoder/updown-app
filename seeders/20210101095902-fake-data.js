@@ -44,6 +44,34 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        username: 'jitcorn',
+        password: 'jitcorn',
+        hashedPassword: getHash('jitcorn'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        username: 'kenrick',
+        password: 'kenrick',
+        hashedPassword: getHash('kenrick'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        username: 'veena',
+        password: 'veena',
+        hashedPassword: getHash('veena'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        username: 'jeremy',
+        password: 'jeremy',
+        hashedPassword: getHash('jeremy'),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ];
 
     await queryInterface.bulkInsert(

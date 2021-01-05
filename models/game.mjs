@@ -19,12 +19,8 @@ export default function gameModel(sequelize, DataTypes) {
         key: 'id',
       },
     },
-    currentPlayerId: {
+    currentPlayerNum: {
       type: DataTypes.INTEGER,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
     },
     status: {
       allowNull: false,

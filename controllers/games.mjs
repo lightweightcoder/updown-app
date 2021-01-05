@@ -21,12 +21,11 @@ const { Op } = pkg;
  * @param {array} playerIds - each element is a player id
  * @param {object} discardPileCard - card for the discard pile
  */
-const getCurrentPlayerNumAndId = (playersHands, playerIds, discardPileCard) => {
-  let currentPlayerNum = 'none';
-  let currentPlayerId = 'none';
+const getStartingPlayerNum = (playersHands, discardPileCard) => {
+  let startingPlayerNum = 'none';
 
   // check if a player has a playable card
-  for (let i = 0; i < playerIds.length; i += 1) {
+  for (let i = 0; i < playersHands.length; i += 1) {
     for (let j = 0; j < playersHands[i].length; j += 1) {
       const cardBeingChecked = playersHands[i][j];
 
@@ -34,23 +33,16 @@ const getCurrentPlayerNumAndId = (playersHands, playerIds, discardPileCard) => {
       // eslint-disable-next-line max-len
       if (cardBeingChecked.rank === discardPileCard.rank || cardBeingChecked.rank === discardPileCard.rank + 1 || cardBeingChecked.rank === discardPileCard.rank - 1 || (cardBeingChecked.rank === 1 && discardPileCard.rank === 13) || (cardBeingChecked.rank === 13 && discardPileCard.rank === 1)) {
         // this player who has a playable card will be the curent player
-        currentPlayerNum = i + 1;
-        currentPlayerId = playerIds[i];
+        startingPlayerNum = i + 1;
 
-        // if that player has a card, return that player's number and Id and exit the function
-        return {
-          currentPlayerNum,
-          currentPlayerId,
-        };
+        // if that player has a card, return that player's number and exit the function
+        return startingPlayerNum;
       }
     }
   }
 
   // if code reaches here, no player has a playable card
-  return {
-    currentPlayerNum,
-    currentPlayerId,
-  };
+  return startingPlayerNum;
 };
 
 /*
@@ -108,12 +100,12 @@ export default function games(db) {
         playerIds = [loggedInUserId, ...playerIds];
       }
 
-      let currentPlayerNum = 'none';
+      let startingPlayerNum = 'none';
 
       // if we cant find a current player after an iteration of the while loop below,
       // it means that no player has a playable card even after emptying the drawPile
       // so a new set of game items have to be created again.
-      while (currentPlayerNum === 'none') {
+      while (startingPlayerNum === 'none') {
         // make items for a new game: a shuffled deck, playerhands, draw pile and discard pile card
         const newGameItems = makeNewGameItems(playerIds.length);
 
@@ -121,28 +113,21 @@ export default function games(db) {
         const { drawPile } = newGameItems;
         let { discardPileCard } = newGameItems;
 
-        // try to get a current player number and id. The current player has to have a playable card
-        // eslint-disable-next-line max-len
-        let currentPlayerNumAndId = getCurrentPlayerNumAndId(playersHands, playerIds, discardPileCard);
-
-        currentPlayerNum = currentPlayerNumAndId.currentPlayerNum;
-        let { currentPlayerId } = currentPlayerNumAndId;
+        // try to get a current player number. The current player has to have a playable card
+        startingPlayerNum = getStartingPlayerNum(playersHands, discardPileCard);
 
         // while there are no players with a playable card and there are still cards in drawPile,
         // make a card from drawPile the discardPileCard and do the check again
         // and repeat till a player has a playable card
-        while (currentPlayerNum === 'none' && drawPile.length !== 0) {
+        while (startingPlayerNum === 'none' && drawPile.length !== 0) {
           discardPileCard = drawPile.pop();
 
           // eslint-disable-next-line max-len
-          currentPlayerNumAndId = getCurrentPlayerNumAndId(playersHands, playerIds, discardPileCard);
-
-          currentPlayerNum = currentPlayerNumAndId.currentPlayerNum;
-          currentPlayerId = currentPlayerNumAndId.currentPlayerId;
+          startingPlayerNum = getStartingPlayerNum(playersHands, discardPileCard);
         }
 
         // if a current player number is found
-        if (currentPlayerNum !== 'none') {
+        if (startingPlayerNum !== 'none') {
           // create game in db
           console.log('create game!');
         }
