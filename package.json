@@ -22,7 +22,6 @@
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "@babel/preset-env": "^7.12.11",
-    "axios": "^0.21.1",
     "babel-loader": "^8.2.2",
     "css-loader": "^5.0.1",
     "eslint": "^7.15.0",
@@ -46,6 +45,7 @@
     "jssha": "^3.2.0",
     "method-override": "^3.0.0",
     "pg": "^8.5.1",
-    "sequelize": "^6.3.5"
+    "sequelize": "^6.3.5",
+    "axios": "^0.21.1"
   }
 }
