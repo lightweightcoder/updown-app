@@ -7,6 +7,7 @@ const messageCol = document.getElementById('message-col');
 const drawPileCol = document.getElementById('drawPile-col');
 const discardPileCardCol = document.getElementById('discardPileCard-col');
 const gameStatsTableContainer = document.getElementById('gameStatsTable-cont');
+const playerHandRow = document.getElementById('playerHand-row');
 
 // helper functions ============================================
 // display the user's info and logout btn
@@ -90,6 +91,32 @@ const displayGameStats = (data) => {
   }
 };
 
+// make a card display
+const makeCard = (cardData) => {
+  const suitEl = document.createElement('div');
+
+  suitEl.innerText = cardData.suit;
+
+  const nameEl = document.createElement('div');
+  nameEl.innerText = cardData.name;
+
+  const cardEl = document.createElement('div');
+  cardEl.classList.add('card', 'col-3', 'align-items-center', 'col-md-2');
+
+  cardEl.appendChild(nameEl);
+  cardEl.appendChild(suitEl);
+
+  return cardEl;
+};
+
+// display cards
+const displayCards = (playerHand) => {
+  for (let i = 0; i < playerHand.length; i += 1) {
+    const cardEl = makeCard(playerHand[i]);
+    playerHandRow.appendChild(cardEl);
+  }
+};
+
 // game initialisation =============
 // make request for all items for gameplay of the ongoing game
 axios.get('/games/one')
@@ -102,6 +129,7 @@ axios.get('/games/one')
     displayDrawPileSize(gameData.drawPileSize);
     displayDiscardPileCard(gameData.discardPileCard);
     displayGameStats(gameData.tableData);
+    displayCards(gameData.handCards);
   })
   .catch((error) => {
     // handle error
