@@ -104,10 +104,6 @@ module.exports = {
       playerNum: {
         type: Sequelize.INTEGER,
       },
-      score: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0,
-      },
     });
   },
 

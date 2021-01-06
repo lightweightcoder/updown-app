@@ -45,6 +45,26 @@ const getStartingPlayerId = (playersHands, playerIds, discardPileCard) => {
   return startingPlayerId;
 };
 
+/**
+ * evaluate and update:
+ * gamesUsers table with the user's hand, score, next player,
+ * games table with drawPile and discardPileCard
+ * @param {object} gameData - items needed to do the evaluation and update
+ */
+const updateGameAndGamesUsersTable = (gameData) => {
+  // store the kes in variables
+  const {
+    userId, drawPile, gamesUsersData, discardPileCard,
+  } = gameData;
+
+  // find the user in gamesUsersData and add 1 to the user's score field
+  for (let i = 0; i < gamesUsersData.length; i += 1) {
+    if (userId === gamesUsersData[i].userId) {
+      gamesUsersData[i].score += 1;
+    }
+  }
+};
+
 /*
  * ========================================================
  * ========================================================
@@ -294,9 +314,9 @@ export default function games(db) {
 
       // get the discard pile card
       const { discardPileCard } = gameQueryResult;
+
       // get the 1st card played
       const firstCardPlayed = cardsToPlay[0];
-      console.log('cardsToPlay', cardsToPlay);
 
       // if there is an invalid card played, send a response to inform user to only play valid cards
       // valid cards must fall within +-1 rank of that of the discard pile card
@@ -313,6 +333,33 @@ export default function games(db) {
           return;
         }
       }
+
+      /** -----------------------------------------------------------------
+       * if code reaches here, validations are successful. Update the game.
+       * ------------------------------------------------------------------
+       */
+
+      // assign the gamesUsers table data to a new array
+      // so we will not do a 'manual' update to the gamesUsers model instances
+      const gamesUsersData = [];
+      for (let i = 0; i < gameQueryResult.gamesUsers.length; i += 1) {
+        gamesUsersData.push(gameQueryResult.gamesUsers[i].dataValues);
+      }
+
+      // store the data needed to update the game in an object
+      const gameData = {
+        // to update user's score
+        userId: req.user.id,
+        // used when game needs to draw a card to the discard pile
+        drawPile: gameQueryResult.drawPile,
+        // used to update the user's hand, score, and check who is the next player
+        gamesUsersData,
+        // new discard pile card
+        discardPileCard: firstCardPlayed,
+      };
+
+      // update the game
+      updateGameAndGamesUsersTable(gameData);
     } catch (error) {
       console.log('play cards error: ', error);
       // send error to browser

@@ -28,9 +28,6 @@ export default function gamesUserModel(sequelize, DataTypes) {
       playerNum: {
         type: DataTypes.INTEGER,
       },
-      score: {
-        type: DataTypes.INTEGER,
-      },
     },
     {
       // timestamps: false prevents Sequelize from adding

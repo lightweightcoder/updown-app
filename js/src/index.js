@@ -110,27 +110,22 @@ const displayGameStats = (data) => {
     const row = document.createElement('div');
     row.classList.add('row');
     const usernameCol = document.createElement('div');
-    usernameCol.classList.add('col-6', 'table-col');
+    usernameCol.classList.add('col-7', 'table-col');
     const handSizeCol = document.createElement('div');
-    handSizeCol.classList.add('col-3', 'table-col');
-    const scoreCol = document.createElement('div');
-    scoreCol.classList.add('col-3', 'table-col');
+    handSizeCol.classList.add('col-5', 'table-col');
 
     // create elements to contain the game statistics content
     const usernameEl = document.createElement('p');
     const handSizeEl = document.createElement('p');
-    const scoreEl = document.createElement('p');
 
     // add the game statistics content
     usernameEl.innerHTML = data[i].username;
     handSizeEl.innerHTML = data[i].handSize;
-    scoreEl.innerHTML = data[i].score;
 
     // append elements
     usernameCol.append(usernameEl);
     handSizeCol.append(handSizeEl);
-    scoreCol.append(scoreEl);
-    row.append(usernameCol, handSizeCol, scoreCol);
+    row.append(usernameCol, handSizeCol);
     gameStatsTableContainer.append(row);
   }
 };
