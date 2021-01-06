@@ -294,13 +294,22 @@ export default function games(db) {
 
       // get the discard pile card
       const { discardPileCard } = gameQueryResult;
+      // get the 1st card played
+      const firstCardPlayed = cardsToPlay[0];
+      console.log('cardsToPlay', cardsToPlay);
 
       // if there is an invalid card played, send a response to inform user to only play valid cards
       // valid cards must fall within +-1 rank of that of the discard pile card
+      // all played cards have the same value
       for (let i = 0; i < cardsToPlay.length; i += 1) {
+        if (cardsToPlay[i].rank !== firstCardPlayed.rank) {
+          res.send('please only select cards that are +-1 of the value of the discard pile card and all cards must be of the same value');
+          return;
+        }
+
         // eslint-disable-next-line max-len
         if (!(cardsToPlay[i].rank === discardPileCard.rank || cardsToPlay[i].rank === discardPileCard.rank + 1 || cardsToPlay[i].rank === discardPileCard.rank - 1 || (cardsToPlay[i].rank === 1 && discardPileCard.rank === 13) || (cardsToPlay[i].rank === 13 && discardPileCard.rank === 1))) {
-          res.send('please only select cards that are +-1 of the value of the discard pile card');
+          res.send('please only select cards that are +-1 of the value of the discard pile card and all cards must be of the same value');
           return;
         }
       }
