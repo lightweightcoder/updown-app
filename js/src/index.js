@@ -9,6 +9,7 @@ const drawPileCol = document.getElementById('drawPile-col');
 const discardPileCardCol = document.getElementById('discardPileCard-col');
 const gameStatsTableContainer = document.getElementById('gameStatsTable-cont');
 const playerHandRow = document.getElementById('playerHand-row');
+const playCardsBtn = document.getElementById('playCards-btn');
 
 // array to store user's cards to send to the discard pile
 const cardsToPlay = [];
@@ -175,6 +176,14 @@ axios.get('/games/one')
     displayDiscardPileCard(gameData.discardPileCard);
     displayGameStats(gameData.tableData);
     displayCards(gameData.handCards);
+
+    // remove display of play cards btn if it is not the user's turn, vice versa
+    if (gameData.isUserTurn === false) {
+      playCardsBtn.classList.add('remove-display');
+    } else {
+      // will not remove anything if this class was not added previously
+      playCardsBtn.classList.remove('remove-display');
+    }
   })
   .catch((error) => {
     // handle error

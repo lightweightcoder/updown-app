@@ -198,6 +198,12 @@ export default function games(db) {
       const gameInstance = gameInstances[0];
       const gameUserInstance = gameInstances[0].gamesUser;
 
+      // set boolean if user is the current player of the turn
+      let isUserTurn = false;
+      if (gameInstance.currentPlayerId === req.user.id) {
+        isUserTurn = true;
+      }
+
       // query DB for user of the current turn
       const currentTurnPlayerInstance = await db.User.findOne({
         where: {
@@ -240,6 +246,7 @@ export default function games(db) {
         discardPileCard: gameInstance.discardPileCard,
         handCards: gameUserInstance.hand,
         tableData: tableInfo,
+        isUserTurn,
       };
 
       // send the response
