@@ -47,22 +47,128 @@ const getStartingPlayerId = (playersHands, playerIds, discardPileCard) => {
 
 /**
  * evaluate and update:
- * gamesUsers table with the user's hand, score, next player,
+ * gamesUsers table with the user's hand, next player,
  * games table with drawPile and discardPileCard
+ * return the updated data to display on gameplay page
+ * return winner name if a winner is found
  * @param {object} gameData - items needed to do the evaluation and update
  */
 const updateGameAndGamesUsersTable = (gameData) => {
-  // store the kes in variables
+  // store the keys in variables
   const {
-    userId, drawPile, gamesUsersData, discardPileCard,
+    userId, drawPile, gamesUsersData, cardsToPlay,
   } = gameData;
 
-  // find the user in gamesUsersData and add 1 to the user's score field
+  let { discardPileCard } = gameData;
+
+  let winnerId = null;
+
+  // the potential next player's index in gamesUsersData
+  let potentialNextPlayerIndex;
+
+  // find the user and update the user's hand (remove played cards from the hand)
   for (let i = 0; i < gamesUsersData.length; i += 1) {
     if (userId === gamesUsersData[i].userId) {
-      gamesUsersData[i].score += 1;
+      // set the index of the tentative next player.
+      potentialNextPlayerIndex = i + 1;
+
+      // remove played cards from the user's hand
+      for (let j = 0; j < cardsToPlay.length; j += 1) {
+        for (let k = 0; k < gamesUsersData[i].hand.length; k += 1) {
+          // if cards name and suit matches, remove it from user's hand
+          // eslint-disable-next-line max-len
+          if ((cardsToPlay[j].name === gamesUsersData[i].hand[k].name) && (cardsToPlay[j].suit === gamesUsersData[i].hand[k].suit)) {
+            gamesUsersData[i].hand.splice(k, 1);
+
+            // account for the change in length in cardsToPlay
+            j -= 1;
+
+            // make k large enough to exit the for loop because
+            // there's no need to check for that card anymore
+            k = 1000;
+          }
+        }
+      }
+
+      // if user has no card left, he/she wins the game
+      if (gamesUsersData[i].hand.length === 0) {
+        console.log('user wins!');
+        // display a winner modal
+        // set winnerId
+        winnerId = userId;
+      }
+      // make i large enough to exit the for loop
+      i = 1000;
     }
   }
+
+  // if winnerId !== null update the game with winnerId.
+  // -----------------------------------------------------
+
+  // check who the next player is, and use top card of drawPile as discard pile card if needed
+  // -------------------------------------------------------------------------------
+  // to set the next player's id
+  let nextPlayerId = null;
+
+  // if nextPlayerId === null, it means a next player has not been found
+  while (nextPlayerId === null && drawPile.length > 0) {
+    // to track number of players that skipped,
+    // counting from player corresponding to nextPlayerIndex
+    let timesSkipped = 0;
+
+    // exit loop if every player has skipped or a next player has been found
+    while (timesSkipped < gamesUsersData.length && nextPlayerId !== null) {
+    // if the potentialNextPlayerIndex exceeds the available indexes of gamesUsersData,
+    // reset potentialNextPlayerIndex to 0
+      if (potentialNextPlayerIndex === gamesUsersData.length) {
+        potentialNextPlayerIndex = 0;
+      }
+
+      // player's hand to check
+      const handBeingChecked = gamesUsersData[potentialNextPlayerIndex].hand;
+
+      // check if the potential next player has a valid card in hand
+      // by comparing with discardPileCard
+      for (let i = 0; i < handBeingChecked.length; i += 1) {
+        const cardBeingChecked = handBeingChecked[i];
+
+        // if card meets criteria to be playable
+        // eslint-disable-next-line max-len
+        if (cardBeingChecked.rank === discardPileCard.rank || cardBeingChecked.rank === discardPileCard.rank + 1 || cardBeingChecked.rank === discardPileCard.rank - 1 || (cardBeingChecked.rank === 1 && discardPileCard.rank === 13) || (cardBeingChecked.rank === 13 && discardPileCard.rank === 1)) {
+        // this potential next player who has a valid card is confirmed the next player
+        // this will cause the while loop to stop
+          nextPlayerId = gamesUsersData[potentialNextPlayerIndex].userId;
+        }
+      }
+
+      // if the next player has not been found, skip once.
+      if (nextPlayerId === null) {
+        timesSkipped += 1;
+        potentialNextPlayerIndex += 1;
+      }
+    }
+
+    // if the next player has not been found, and every player has skipped,
+    // use top card of drawPile as discard pile card and check again in next iteration of while loop
+    if (nextPlayerId === null && timesSkipped === gamesUsersData.length) {
+      discardPileCard = drawPile.pop();
+    }
+  }
+
+  // if next player has not been found and draw pile has no more cards,
+  // find user who has the least cards left to be the winner
+  // update the database
+  if (nextPlayerId === null && drawPile.length === 0) {
+
+    // return winner name;
+  }
+
+  /** --------------------------------------------------------------------------
+   * if code reaches here, the next player is found. Update the game data in DB.
+   * ---------------------------------------------------------------------------
+   */
+
+  // update the database
 };
 
 /*
@@ -195,6 +301,9 @@ export default function games(db) {
 
       // run the DB insert query to create join table data
       await db.GamesUser.bulkCreate(newGamesUserDatas);
+
+      // redirect to gameplay page
+      res.redirect('/');
     } catch (error) {
       console.log('create game error: ', error);
       // send error to browser
@@ -231,7 +340,7 @@ export default function games(db) {
         },
       });
 
-      // query DB for player number, names, handsize and score for table on gameplay page
+      // query DB for player number, names, handsize for table on gameplay page
       const playersInfo = await db.GamesUser.findAll({
         where: {
           gameId: gameInstance.id,
@@ -242,7 +351,7 @@ export default function games(db) {
         include: db.User,
       });
 
-      // array to store player number, names, handsize and score
+      // array to store player number, names and handsize
       const tableInfo = [];
 
       // populate the table info
@@ -250,7 +359,6 @@ export default function games(db) {
         const tableInfoItem = {
           username: playersInfo[i].user.username,
           handSize: playersInfo[i].hand.length,
-          score: playersInfo[i].score,
         };
 
         tableInfo.push(tableInfoItem);
@@ -348,14 +456,16 @@ export default function games(db) {
 
       // store the data needed to update the game in an object
       const gameData = {
-        // to update user's score
+        // to find the user's hand in gamesUsersData
         userId: req.user.id,
         // used when game needs to draw a card to the discard pile
         drawPile: gameQueryResult.drawPile,
-        // used to update the user's hand, score, and check who is the next player
+        // used to update the user's hand and check who is the next player
         gamesUsersData,
         // new discard pile card
         discardPileCard: firstCardPlayed,
+        // to update user's hand
+        cardsToPlay,
       };
 
       // update the game
