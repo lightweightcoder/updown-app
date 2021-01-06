@@ -14,7 +14,46 @@ const playCardsBtn = document.getElementById('playCards-btn');
 // array to store user's cards to send to the discard pile
 const cardsToPlay = [];
 
+// modal to display messages
+let modalContainer = null;
+
 // helper functions ============================================
+// create and display a modal with an invalid message
+const createAndDisplayInvalidMsgModal = (message) => {
+  // if the modal has been created before, remove it first
+  if (modalContainer !== null) {
+    modalContainer.remove();
+  }
+  modalContainer = document.createElement('div');
+
+  // html to create the modal
+  modalContainer.innerHTML = `
+    <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">OH NO</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>${message}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.append(modalContainer);
+
+  // eslint-disable-next-line no-undef
+  const modal = new bootstrap.Modal(document.querySelector('.modal'));
+
+  // show the modal
+  modal.show();
+};
 // display the user's info and logout btn
 const displayUserSessionInfo = (username) => {
   const welcomeMsgEl = document.createElement('span');
@@ -163,6 +202,30 @@ const displayCards = (playerHand) => {
   }
 };
 
+// handler to send played cards to server to update game
+const handlePlayCardsBtnClick = (gameId) => function () {
+  // if player did not select any cards, don't do anything
+  if (cardsToPlay.length === 0) {
+    createAndDisplayInvalidMsgModal('please choose a card to play');
+    return;
+  }
+
+  axios.put(`/games/${gameId}/playcards`, { cardsToPlay })
+    .then((res) => {
+      console.log(res);
+      // if server detects user who played cards is not the current player
+      // or user did not select any cards, show modal with invalid msg
+      if (typeof res.data === 'string') {
+        const invalidMsg = res.data;
+        createAndDisplayInvalidMsgModal(invalidMsg);
+      }
+    })
+    .catch((error) => {
+      // handle error
+      console.log('play cards error:', error);
+    });
+};
+
 // game initialisation =============
 // make request for all items for gameplay of the ongoing game
 axios.get('/games/one')
@@ -184,6 +247,9 @@ axios.get('/games/one')
       // will not remove anything if this class was not added previously
       playCardsBtn.classList.remove('remove-display');
     }
+
+    // add event listener to send played cards to server to update the game
+    playCardsBtn.addEventListener('click', handlePlayCardsBtnClick(gameData.gameId));
   })
   .catch((error) => {
     // handle error

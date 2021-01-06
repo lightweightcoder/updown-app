@@ -61,4 +61,7 @@ export default function routes(app) {
 
   // get game data of a user's ongoing game
   app.get('/games/one', checkAuth, GamesController.show);
+
+  // update game when player plays cards
+  app.put('/games/:id/playcards', checkAuth, GamesController.playCards);
 }

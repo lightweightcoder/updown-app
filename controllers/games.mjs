@@ -236,8 +236,6 @@ export default function games(db) {
         tableInfo.push(tableInfoItem);
       }
 
-      console.log('tableInfo is', tableInfo);
-
       // game data to send to response
       const gameData = {
         username: req.user.username,
@@ -247,6 +245,7 @@ export default function games(db) {
         handCards: gameUserInstance.hand,
         tableData: tableInfo,
         isUserTurn,
+        gameId: gameInstance.id,
       };
 
       // send the response
@@ -258,11 +257,66 @@ export default function games(db) {
     }
   };
 
+  // update game when player plays cards
+  const playCards = async (req, res) => {
+    console.log('put request to play cards and update game');
+
+    try {
+      // store cards played by player
+      const { cardsToPlay } = req.body;
+
+      // if player did not play any cards, send invalid response
+      if (cardsToPlay.length === 0) {
+        res.send('please choose a card to play');
+        return;
+      }
+
+      // store game id
+      const gameId = req.params.id;
+
+      // query DB for data of the corresponding game information
+      const gameQueryResult = await db.Game.findOne({
+        where: {
+          id: gameId,
+        },
+        include: db.GamesUser,
+        order: [
+          [db.GamesUser, 'playerNum', 'ASC'],
+        ],
+      });
+
+      // if the user who played cards is not the current player, send invalid response
+      // this happens when the user manipulates the DOM to show the play cards btn and click on it
+      if (req.user.id !== gameQueryResult.currentPlayerId) {
+        res.send('its not your turn');
+        return;
+      }
+
+      // get the discard pile card
+      const { discardPileCard } = gameQueryResult;
+
+      // if there is an invalid card played, send a response to inform user to only play valid cards
+      // valid cards must fall within +-1 rank of that of the discard pile card
+      for (let i = 0; i < cardsToPlay.length; i += 1) {
+        // eslint-disable-next-line max-len
+        if (!(cardsToPlay[i].rank === discardPileCard.rank || cardsToPlay[i].rank === discardPileCard.rank + 1 || cardsToPlay[i].rank === discardPileCard.rank - 1 || (cardsToPlay[i].rank === 1 && discardPileCard.rank === 13) || (cardsToPlay[i].rank === 13 && discardPileCard.rank === 1))) {
+          res.send('please only select cards that are +-1 of the value of the discard pile card');
+          return;
+        }
+      }
+    } catch (error) {
+      console.log('play cards error: ', error);
+      // send error to browser
+      res.status(500).send(error);
+    }
+  };
+
   // return all functions we define in an object
   // refer to the routes file above to see this used
   return {
     newGame,
     create,
     show,
+    playCards,
   };
 }
