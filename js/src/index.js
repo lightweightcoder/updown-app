@@ -395,9 +395,14 @@ axios.get('/games/one')
 
     // add event listener to send played cards to server to update the game
     playCardsBtn.addEventListener('click', handlePlayCardsBtnClick(gameData.gameId));
+
+    // if its not user turn, add a countdown to refresh the page every 3 seconds
+    if (gameData.isUserTurn === false) {
+      setInterval(() => { window.location = '/'; }, 5000);
+    }
   })
   .catch((error) => {
     // handle error
     console.log('get game error', error);
-    // window.location = 'login';
+    // window.location = '/login';
   });
