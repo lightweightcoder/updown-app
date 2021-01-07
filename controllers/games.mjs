@@ -46,14 +46,55 @@ const getStartingPlayerId = (playersHands, playerIds, discardPileCard) => {
 };
 
 /**
+ * update database with a winner
+ * @param {integer} winnerUserId - winnerId to update in games table
+ * @param {object} gamesUsersData - items needed to do the update
+ * @param {object} db - give access to models to update the database
+ */
+const updateGameWithWinner = async (winnerUserId, gamesUsersData, db) => {
+  console.log('updating winner!');
+  // get the game id
+  const { gameId } = gamesUsersData[0];
+
+  // update winner and status of game in games table
+  await db.Game.update(
+    {
+      winnerId: winnerUserId,
+      isOngoing: false,
+    },
+    {
+      where: {
+        gameId,
+      },
+    },
+  );
+
+  // update the hasOngoingGame column of users table to false for the players
+  for (let i = 0; i < gamesUsersData.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    await db.User.update(
+      {
+        hasOngoingGame: false,
+      },
+      {
+        where: {
+          id: gamesUsersData[i].userId,
+        },
+      },
+    );
+  }
+};
+
+/**
  * evaluate and update:
  * gamesUsers table with the user's hand, next player,
  * games table with drawPile and discardPileCard
  * return the updated data to display on gameplay page
  * return winner name if a winner is found
  * @param {object} gameData - items needed to do the evaluation and update
+ * @param {object} db - give access to models to update the database
  */
-const updateGameAndGamesUsersTable = (gameData) => {
+const updateGameAndGamesUsersTable = async (gameData, db) => {
   // store the keys in variables
   const {
     userId, drawPile, gamesUsersData, cardsToPlay,
@@ -61,7 +102,7 @@ const updateGameAndGamesUsersTable = (gameData) => {
 
   let { discardPileCard } = gameData;
 
-  let winnerId = null;
+  let winnerUserId = null;
 
   // the potential next player's index in gamesUsersData
   let potentialNextPlayerIndex;
@@ -95,15 +136,19 @@ const updateGameAndGamesUsersTable = (gameData) => {
         console.log('user wins!');
         // display a winner modal
         // set winnerId
-        winnerId = userId;
+        winnerUserId = userId;
       }
       // make i large enough to exit the for loop
       i = 1000;
     }
   }
 
-  // if winnerId !== null update the game with winnerId.
-  // -----------------------------------------------------
+  // if user is the winner update the game with a winner and return the winner id
+  if (winnerUserId !== null) {
+    updateGameWithWinner(winnerUserId, gamesUsersData, db);
+
+    return { winnerUserId };
+  }
 
   // check who the next player is, and use top card of drawPile as discard pile card if needed
   // -------------------------------------------------------------------------------
@@ -156,11 +201,82 @@ const updateGameAndGamesUsersTable = (gameData) => {
   }
 
   // if next player has not been found and draw pile has no more cards,
-  // find user who has the least cards left to be the winner
+  // find user who has the least cards left to be the winner and
   // update the database
-  if (nextPlayerId === null && drawPile.length === 0) {
+  // array to store the length of players' hand
+  const handslength = [];
 
-    // return winner name;
+  if (nextPlayerId === null && drawPile.length === 0) {
+    // find the hand lengths of all the players
+    for (let i = 0; i < gamesUsersData.length; i += 1) {
+      handslength.push(gamesUsersData[i].hand.length);
+    }
+
+    // find the smallest hand(s)
+    const smallestHandLength = Math.min(...handslength);
+
+    // find number of smallest hand(s)
+    const smallestHands = handslength.filter((length) => length === smallestHandLength);
+    const countOfSmallestHands = smallestHands.length;
+
+    // if there is only 1 player with the smallest hand, he/she is the winner and
+    // update database
+    if (countOfSmallestHands === 1) {
+      const winnerIndex = handslength.indexOf(smallestHandLength);
+
+      winnerUserId = gamesUsersData[winnerIndex].userId;
+
+      // update database with winner
+      updateGameWithWinner(winnerUserId, gamesUsersData, db);
+
+      // return the winner id
+      return { winnerUserId };
+    }
+
+    // if there are >1 player with the smallest hand, its a draw
+    // update database
+    if (countOfSmallestHands > 1) {
+      // update the isOngoing column in the games table of that game
+      await db.Game.update(
+        {
+          isOngoing: false,
+        },
+        {
+          where: {
+            id: gamesUsersData[0].gameId,
+          },
+        },
+      );
+
+      // update the hasOngoingGame column of users table to false for the players
+      for (let i = 0; i < gamesUsersData.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await db.User.update(
+          {
+            hasOngoingGame: false,
+          },
+          {
+            where: {
+              id: gamesUsersData[i].userId,
+            },
+          },
+        );
+      }
+
+      // get the gameUsers that have the smallest hand lengths
+      // eslint-disable-next-line max-len
+      const gamesUsersWhoTied = gamesUsersData.filter((gamesUser) => gamesUser.hand.length === smallestHandLength);
+
+      // array to store the user ids that tied the game
+      const userIdsWhoTied = [];
+
+      for (let i = 0; i < gamesUsersWhoTied.length; i += 1) {
+        userIdsWhoTied.push(gamesUsersWhoTied[i].userId);
+      }
+
+      // return the users ids that tied the game
+      return { userIdsWhoTied };
+    }
   }
 
   /** --------------------------------------------------------------------------
@@ -460,7 +576,8 @@ export default function games(db) {
         userId: req.user.id,
         // used when game needs to draw a card to the discard pile
         drawPile: gameQueryResult.drawPile,
-        // used to update the user's hand and check who is the next player
+        // used to update the user's hand and check who is the next player and
+        // update gameUsers table if there is a winner/draw
         gamesUsersData,
         // new discard pile card
         discardPileCard: firstCardPlayed,
@@ -469,7 +586,7 @@ export default function games(db) {
       };
 
       // update the game
-      updateGameAndGamesUsersTable(gameData);
+      await updateGameAndGamesUsersTable(gameData, db);
     } catch (error) {
       console.log('play cards error: ', error);
       // send error to browser
