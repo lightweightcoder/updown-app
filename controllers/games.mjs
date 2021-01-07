@@ -53,35 +53,40 @@ const getStartingPlayerId = (playersHands, playerIds, discardPileCard) => {
  */
 const updateGameWithWinner = async (winnerUserId, gamesUsersData, db) => {
   console.log('updating winner!');
-  // get the game id
-  const { gameId } = gamesUsersData[0];
 
-  // update winner and status of game in games table
-  await db.Game.update(
-    {
-      winnerId: winnerUserId,
-      isOngoing: false,
-    },
-    {
-      where: {
-        gameId,
-      },
-    },
-  );
+  try {
+    // get the game id
+    const { gameId } = gamesUsersData[0];
 
-  // update the hasOngoingGame column of users table to false for the players
-  for (let i = 0; i < gamesUsersData.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    await db.User.update(
+    // update winner and status of game in games table
+    await db.Game.update(
       {
-        hasOngoingGame: false,
+        winnerId: winnerUserId,
+        isOngoing: false,
       },
       {
         where: {
-          id: gamesUsersData[i].userId,
+          id: gameId,
         },
       },
     );
+
+    // update the hasOngoingGame column of users table to false for the players
+    for (let i = 0; i < gamesUsersData.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+      await db.User.update(
+        {
+          hasOngoingGame: false,
+        },
+        {
+          where: {
+            id: gamesUsersData[i].userId,
+          },
+        },
+      );
+    }
+  } catch (error) {
+    console.log('updateGameWithWinner error:', error);
   }
 };
 
@@ -94,234 +99,241 @@ const updateGameWithWinner = async (winnerUserId, gamesUsersData, db) => {
  * @param {object} gameData - items needed to do the evaluation and update
  * @param {object} db - give access to models to update the database
  */
+// eslint-disable-next-line consistent-return
 const updateGameAndGamesUsersTable = async (gameData, db) => {
   console.log('in update game and games users table fn');
-  // store the keys in variables
-  const {
-    userId, drawPile, gamesUsersData, cardsToPlay,
-  } = gameData;
 
-  let { discardPileCard } = gameData;
+  try {
+    // store the keys in variables
+    const {
+      userId, drawPile, gamesUsersData, cardsToPlay,
+    } = gameData;
 
-  let winnerUserId = null;
+    let { discardPileCard } = gameData;
 
-  // the potential next player's index in gamesUsersData
-  let potentialNextPlayerIndex;
+    let winnerUserId = null;
 
-  // find the user and update the user's hand (remove played cards from the hand)
-  for (let i = 0; i < gamesUsersData.length; i += 1) {
-    if (userId === gamesUsersData[i].userId) {
+    // the potential next player's index in gamesUsersData
+    let potentialNextPlayerIndex;
+
+    // find the user and update the user's hand (remove played cards from the hand)
+    for (let i = 0; i < gamesUsersData.length; i += 1) {
+      if (userId === gamesUsersData[i].userId) {
       // set the index of the tentative next player.
-      potentialNextPlayerIndex = i + 1;
+        potentialNextPlayerIndex = i + 1;
 
-      // remove played cards from the user's hand
-      for (let j = 0; j < cardsToPlay.length; j += 1) {
-        for (let k = 0; k < gamesUsersData[i].hand.length; k += 1) {
+        // remove played cards from the user's hand
+        for (let j = 0; j < cardsToPlay.length; j += 1) {
+          for (let k = 0; k < gamesUsersData[i].hand.length; k += 1) {
           // if cards name and suit matches, remove it from user's hand
           // eslint-disable-next-line max-len
-          if ((cardsToPlay[j].name === gamesUsersData[i].hand[k].name) && (cardsToPlay[j].suit === gamesUsersData[i].hand[k].suit)) {
-            gamesUsersData[i].hand.splice(k, 1);
+            if ((cardsToPlay[j].name === gamesUsersData[i].hand[k].name) && (cardsToPlay[j].suit === gamesUsersData[i].hand[k].suit)) {
+              gamesUsersData[i].hand.splice(k, 1);
 
-            // account for the change in length in cardsToPlay
-            j -= 1;
+              // account for the change in length in cardsToPlay
+              j -= 1;
 
-            // make k large enough to exit the for loop because
-            // there's no need to check for that card anymore
-            k = 1000;
+              // make k large enough to exit the for loop because
+              // there's no need to check for that card anymore
+              k = 1000;
+            }
           }
         }
-      }
 
-      // if user has no card left, he/she wins the game
-      if (gamesUsersData[i].hand.length === 0) {
-        console.log('user wins!');
-        // display a winner modal
-        // set winnerId
-        winnerUserId = userId;
-      }
-      // make i large enough to exit the for loop
-      i = 1000;
-    }
-  }
-
-  // if user is the winner update the game with a winner and return the winner id
-  if (winnerUserId !== null) {
-    updateGameWithWinner(winnerUserId, gamesUsersData, db);
-
-    return { winnerUserId };
-  }
-
-  // check who the next player is, and use top card of drawPile as discard pile card if needed
-  // -------------------------------------------------------------------------------
-  // to set the next player's id
-  let nextPlayerId = null;
-
-  // if nextPlayerId === null, it means a next player has not been found
-  while (nextPlayerId === null && drawPile.length > 0) {
-    // to track number of players that skipped,
-    // counting from player corresponding to nextPlayerIndex
-    let timesSkipped = 0;
-
-    // exit loop if every player has skipped or a next player has been found
-    while (timesSkipped < gamesUsersData.length && nextPlayerId === null) {
-      // if the potentialNextPlayerIndex exceeds the available indexes of gamesUsersData,
-      // reset potentialNextPlayerIndex to 0
-      if (potentialNextPlayerIndex === gamesUsersData.length) {
-        potentialNextPlayerIndex = 0;
-      }
-
-      // player's hand to check
-      const handBeingChecked = gamesUsersData[potentialNextPlayerIndex].hand;
-
-      // check if the potential next player has a valid card in hand
-      // by comparing with discardPileCard
-      for (let i = 0; i < handBeingChecked.length; i += 1) {
-        const cardBeingChecked = handBeingChecked[i];
-
-        // if card meets criteria to be playable
-        // eslint-disable-next-line max-len
-        if (cardBeingChecked.rank === discardPileCard.rank || cardBeingChecked.rank === discardPileCard.rank + 1 || cardBeingChecked.rank === discardPileCard.rank - 1 || (cardBeingChecked.rank === 1 && discardPileCard.rank === 13) || (cardBeingChecked.rank === 13 && discardPileCard.rank === 1)) {
-          // this potential next player who has a valid card is confirmed the next player
-          // this will cause the while loop to stop
-          nextPlayerId = gamesUsersData[potentialNextPlayerIndex].userId;
-
-          // make i the hand length to exit the for loop
-          i = handBeingChecked.length;
+        // if user has no card left, he/she wins the game
+        if (gamesUsersData[i].hand.length === 0) {
+          console.log('user wins!');
+          // display a winner modal
+          // set winnerId
+          winnerUserId = userId;
         }
-      }
-
-      // if the next player has not been found, skip once.
-      if (nextPlayerId === null) {
-        timesSkipped += 1;
-        potentialNextPlayerIndex += 1;
+        // make i large enough to exit the for loop
+        i = 1000;
       }
     }
 
-    // if the next player has not been found, and every player has skipped,
-    // use top card of drawPile as discard pile card and check again in next iteration of while loop
-    if (nextPlayerId === null && timesSkipped === gamesUsersData.length) {
-      console.log('use top card of draw pile as discard pile card');
-      discardPileCard = drawPile.pop();
-    }
-  }
-
-  // if next player has not been found and draw pile has no more cards,
-  // find user who has the least cards left to be the winner and
-  // update the database
-  // array to store the length of players' hand
-  const handslength = [];
-
-  if (nextPlayerId === null && drawPile.length === 0) {
-    console.log('next player is not found and draw pile is empty');
-    // find the hand lengths of all the players
-    for (let i = 0; i < gamesUsersData.length; i += 1) {
-      handslength.push(gamesUsersData[i].hand.length);
-    }
-
-    // find the smallest hand(s)
-    const smallestHandLength = Math.min(...handslength);
-
-    // find number of smallest hand(s)
-    const smallestHands = handslength.filter((length) => length === smallestHandLength);
-    const countOfSmallestHands = smallestHands.length;
-
-    // if there is only 1 player with the smallest hand, he/she is the winner and
-    // update database
-    if (countOfSmallestHands === 1) {
-      const winnerIndex = handslength.indexOf(smallestHandLength);
-
-      winnerUserId = gamesUsersData[winnerIndex].userId;
-
-      // update database with winner
+    // if user is the winner update the game with a winner and return the winner id
+    if (winnerUserId !== null) {
       updateGameWithWinner(winnerUserId, gamesUsersData, db);
 
-      // return the winner id
       return { winnerUserId };
     }
 
-    // if there are >1 player with the smallest hand, its a draw
-    // update database
-    if (countOfSmallestHands > 1) {
-      console.log('tied game');
-      // update the isOngoing column in the games table of that game
-      await db.Game.update(
-        {
-          isOngoing: false,
-        },
-        {
-          where: {
-            id: gamesUsersData[0].gameId,
-          },
-        },
-      );
+    // check who the next player is, and use top card of drawPile as discard pile card if needed
+    // -------------------------------------------------------------------------------
+    // to set the next player's id
+    let nextPlayerId = null;
 
-      // update the hasOngoingGame column of users table to false for the players
+    // if nextPlayerId === null, it means a next player has not been found
+    while (nextPlayerId === null && drawPile.length > 0) {
+    // to track number of players that skipped,
+    // counting from player corresponding to nextPlayerIndex
+      let timesSkipped = 0;
+
+      // exit loop if every player has skipped or a next player has been found
+      while (timesSkipped < gamesUsersData.length && nextPlayerId === null) {
+      // if the potentialNextPlayerIndex exceeds the available indexes of gamesUsersData,
+      // reset potentialNextPlayerIndex to 0
+        if (potentialNextPlayerIndex === gamesUsersData.length) {
+          potentialNextPlayerIndex = 0;
+        }
+
+        // player's hand to check
+        const handBeingChecked = gamesUsersData[potentialNextPlayerIndex].hand;
+
+        // check if the potential next player has a valid card in hand
+        // by comparing with discardPileCard
+        for (let i = 0; i < handBeingChecked.length; i += 1) {
+          const cardBeingChecked = handBeingChecked[i];
+
+          // if card meets criteria to be playable
+          // eslint-disable-next-line max-len
+          if (cardBeingChecked.rank === discardPileCard.rank || cardBeingChecked.rank === discardPileCard.rank + 1 || cardBeingChecked.rank === discardPileCard.rank - 1 || (cardBeingChecked.rank === 1 && discardPileCard.rank === 13) || (cardBeingChecked.rank === 13 && discardPileCard.rank === 1)) {
+          // this potential next player who has a valid card is confirmed the next player
+          // this will cause the while loop to stop
+            nextPlayerId = gamesUsersData[potentialNextPlayerIndex].userId;
+
+            // make i the hand length to exit the for loop
+            i = handBeingChecked.length;
+          }
+        }
+
+        // if the next player has not been found, skip once.
+        if (nextPlayerId === null) {
+          timesSkipped += 1;
+          potentialNextPlayerIndex += 1;
+        }
+      }
+
+      // if the next player has not been found, and every player has skipped,
+      // use top card of drawPile as discard pile card and
+      // check again in next iteration of while loop
+      if (nextPlayerId === null && timesSkipped === gamesUsersData.length) {
+        console.log('use top card of draw pile as discard pile card');
+        discardPileCard = drawPile.pop();
+      }
+    }
+
+    // if next player has not been found and draw pile has no more cards,
+    // find user who has the least cards left to be the winner and
+    // update the database
+    // array to store the length of players' hand
+    const handslength = [];
+
+    if (nextPlayerId === null && drawPile.length === 0) {
+      console.log('next player is not found and draw pile is empty');
+      // find the hand lengths of all the players
       for (let i = 0; i < gamesUsersData.length; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await db.User.update(
+        handslength.push(gamesUsersData[i].hand.length);
+      }
+
+      // find the smallest hand(s)
+      const smallestHandLength = Math.min(...handslength);
+
+      // find number of smallest hand(s)
+      const smallestHands = handslength.filter((length) => length === smallestHandLength);
+      const countOfSmallestHands = smallestHands.length;
+
+      // if there is only 1 player with the smallest hand, he/she is the winner and
+      // update database
+      if (countOfSmallestHands === 1) {
+        const winnerIndex = handslength.indexOf(smallestHandLength);
+
+        winnerUserId = gamesUsersData[winnerIndex].userId;
+
+        // update database with winner
+        updateGameWithWinner(winnerUserId, gamesUsersData, db);
+
+        // return the winner id
+        return { winnerUserId };
+      }
+
+      // if there are >1 player with the smallest hand, its a draw
+      // update database
+      if (countOfSmallestHands > 1) {
+        console.log('tied game');
+        // update the isOngoing column in the games table of that game
+        await db.Game.update(
           {
-            hasOngoingGame: false,
+            isOngoing: false,
           },
           {
             where: {
-              id: gamesUsersData[i].userId,
+              id: gamesUsersData[0].gameId,
+            },
+          },
+        );
+
+        // update the hasOngoingGame column of users table to false for the players
+        for (let i = 0; i < gamesUsersData.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+          await db.User.update(
+            {
+              hasOngoingGame: false,
+            },
+            {
+              where: {
+                id: gamesUsersData[i].userId,
+              },
+            },
+          );
+        }
+
+        // get the gameUsers that have the smallest hand lengths
+        // eslint-disable-next-line max-len
+        const gamesUsersWhoTied = gamesUsersData.filter((gamesUser) => gamesUser.hand.length === smallestHandLength);
+
+        // array to store the user ids that tied the game
+        const userIdsWhoTied = [];
+
+        for (let i = 0; i < gamesUsersWhoTied.length; i += 1) {
+          userIdsWhoTied.push(gamesUsersWhoTied[i].userId);
+        }
+
+        // return the users ids that tied the game
+        return { userIdsWhoTied };
+      }
+    }
+
+    /** --------------------------------------------------------------------------
+   * if code reaches here, the next player is found. Update the game data in DB.
+   * ---------------------------------------------------------------------------
+   */
+    // update the user's hand in gamesUsers table
+    for (let i = 0; i < gamesUsersData.length; i += 1) {
+    // if the userId matches that of a gamesUser, update that gamesUser
+      if (userId === gamesUsersData[i].userId) {
+      // eslint-disable-next-line no-await-in-loop
+        await db.GamesUser.update(
+          {
+            hand: gamesUsersData[i].hand,
+          },
+          {
+            where: {
+              id: gamesUsersData[i].id,
             },
           },
         );
       }
-
-      // get the gameUsers that have the smallest hand lengths
-      // eslint-disable-next-line max-len
-      const gamesUsersWhoTied = gamesUsersData.filter((gamesUser) => gamesUser.hand.length === smallestHandLength);
-
-      // array to store the user ids that tied the game
-      const userIdsWhoTied = [];
-
-      for (let i = 0; i < gamesUsersWhoTied.length; i += 1) {
-        userIdsWhoTied.push(gamesUsersWhoTied[i].userId);
-      }
-
-      // return the users ids that tied the game
-      return { userIdsWhoTied };
     }
-  }
 
-  /** --------------------------------------------------------------------------
-   * if code reaches here, the next player is found. Update the game data in DB.
-   * ---------------------------------------------------------------------------
-   */
-  // update the user's hand in gamesUsers table
-  for (let i = 0; i < gamesUsersData.length; i += 1) {
-    // if the userId matches that of a gamesUser, update that gamesUser
-    if (userId === gamesUsersData[i].userId) {
-      // eslint-disable-next-line no-await-in-loop
-      await db.GamesUser.update(
-        {
-          hand: gamesUsersData[i].hand,
-        },
-        {
-          where: {
-            id: gamesUsersData[i].id,
-          },
-        },
-      );
-    }
-  }
-
-  // update the discard pile card and current player turn in games table
-  await db.Game.update(
-    {
-      discardPileCard,
-      currentPlayerId: nextPlayerId,
-    },
-    {
-      where: {
-        id: gamesUsersData[0].gameId,
+    // update the discard pile card and current player turn in games table
+    await db.Game.update(
+      {
+        discardPileCard,
+        currentPlayerId: nextPlayerId,
       },
-    },
-  );
+      {
+        where: {
+          id: gamesUsersData[0].gameId,
+        },
+      },
+    );
 
-  return { nextPlayerId };
+    return { nextPlayerId };
+  } catch (error) {
+    console.log('updateGameAndGamesUsersTable error:', error);
+  }
 };
 
 /*
