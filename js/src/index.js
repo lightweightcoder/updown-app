@@ -285,6 +285,10 @@ const handlePlayCardsBtnClick = (gameId) => function () {
             console.log('get game error', error);
           });
       }
+
+      if (res.data.winnerName) {
+        console.log('winnerName is', res.data.winnerName);
+      }
     })
     .catch((error) => {
       // handle error

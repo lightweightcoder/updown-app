@@ -57,6 +57,8 @@ const updateGameWithWinner = async (winnerUserId, gamesUsersData, db) => {
   try {
     // get the game id
     const { gameId } = gamesUsersData[0];
+    console.log('gameId', gameId);
+    console.log('winnerUserId is', winnerUserId);
 
     // update winner and status of game in games table
     await db.Game.update(
@@ -154,6 +156,7 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
 
     // if user is the winner update the game with a winner and return the winner id
     if (winnerUserId !== null) {
+      console.log('gamesUsersData[0].gameId is', gamesUsersData[0].gameId);
       updateGameWithWinner(winnerUserId, gamesUsersData, db);
 
       return { winnerUserId };
@@ -640,31 +643,45 @@ export default function games(db) {
 
       // if there is a winner, find the winner's name and send it to response
       if (updateResult.winnerUserId) {
-        const winnerInstance = db.User.findOne({
-          where: {
-            id: updateResult.winnerId,
-          },
-        });
+        try {
+          const winnerInstance = await db.User.findOne({
+            where: {
+              id: updateResult.winnerUserId,
+            },
+          });
 
-        res.send({ winnerName: winnerInstance.username });
+          res.send({ winnerName: winnerInstance.username });
+        } catch (error) {
+          console.log('find the winner name error: ', error);
+          // send error to browser
+          res.status(500).send(error);
+        }
+
         return;
       }
 
       // if there is a tie, find the tied players' names and send it to response
       if (updateResult.userIdsWhoTied) {
-        const tiedPlayersInstances = db.User.findAll({
-          where: {
-            id: [...updateResult.userIdsWhoTied],
-          },
-        });
+        try {
+          const tiedPlayersInstances = await db.User.findAll({
+            where: {
+              id: [...updateResult.userIdsWhoTied],
+            },
+          });
 
-        const tiedPlayersNames = [];
+          const tiedPlayersNames = [];
 
-        for (let i = 0; i < tiedPlayersInstances.length; i += 1) {
-          tiedPlayersNames.push(tiedPlayersInstances[i].username);
+          for (let i = 0; i < tiedPlayersInstances.length; i += 1) {
+            tiedPlayersNames.push(tiedPlayersInstances[i].username);
+          }
+
+          res.send({ tiedPlayersNames });
+        } catch (error) {
+          console.log('find the tied players names error: ', error);
+          // send error to browser
+          res.status(500).send(error);
         }
 
-        res.send({ tiedPlayersNames });
         return;
       }
 
