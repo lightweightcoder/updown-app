@@ -151,7 +151,6 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
     return { winnerUserId };
   }
 
-  console.log('check who next player is');
   // check who the next player is, and use top card of drawPile as discard pile card if needed
   // -------------------------------------------------------------------------------
   // to set the next player's id
@@ -159,7 +158,6 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
 
   // if nextPlayerId === null, it means a next player has not been found
   while (nextPlayerId === null && drawPile.length > 0) {
-    console.log('finding next player in while loop');
     // to track number of players that skipped,
     // counting from player corresponding to nextPlayerIndex
     let timesSkipped = 0;
@@ -186,14 +184,15 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
           // this potential next player who has a valid card is confirmed the next player
           // this will cause the while loop to stop
           nextPlayerId = gamesUsersData[potentialNextPlayerIndex].userId;
-          console.log('found next player id!', nextPlayerId);
+
+          // make i the hand length to exit the for loop
+          i = handBeingChecked.length;
         }
       }
 
       // if the next player has not been found, skip once.
       if (nextPlayerId === null) {
         timesSkipped += 1;
-        console.log('timesSkipped', timesSkipped);
         potentialNextPlayerIndex += 1;
       }
     }
@@ -243,6 +242,7 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
     // if there are >1 player with the smallest hand, its a draw
     // update database
     if (countOfSmallestHands > 1) {
+      console.log('tied game');
       // update the isOngoing column in the games table of that game
       await db.Game.update(
         {
@@ -290,20 +290,22 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
    * if code reaches here, the next player is found. Update the game data in DB.
    * ---------------------------------------------------------------------------
    */
-  // update the players' hands in gamesUsers table
+  // update the user's hand in gamesUsers table
   for (let i = 0; i < gamesUsersData.length; i += 1) {
-    console.log('gamesUserData is', gamesUsersData[i]);
-    // eslint-disable-next-line no-await-in-loop
-    await db.GamesUser.update(
-      {
-        hand: gamesUsersData[i].hand,
-      },
-      {
-        where: {
-          id: gamesUsersData[i].id,
+    // if the userId matches that of a gamesUser, update that gamesUser
+    if (userId === gamesUsersData[i].userId) {
+      // eslint-disable-next-line no-await-in-loop
+      await db.GamesUser.update(
+        {
+          hand: gamesUsersData[i].hand,
         },
-      },
-    );
+        {
+          where: {
+            id: gamesUsersData[i].id,
+          },
+        },
+      );
+    }
   }
 
   // update the discard pile card and current player turn in games table
@@ -476,7 +478,7 @@ export default function games(db) {
 
       // store the data into variables
       const gameInstance = gameInstances[0];
-      const gameUserInstance = gameInstances[0].gamesUser;
+      const gamesUserInstance = gameInstances[0].gamesUser;
 
       // set boolean if user is the current player of the turn
       let isUserTurn = false;
@@ -521,7 +523,7 @@ export default function games(db) {
         currentPlayerUsername: currentTurnPlayerInstance.username,
         drawPileSize: gameInstance.drawPile.length,
         discardPileCard: gameInstance.discardPileCard,
-        handCards: gameUserInstance.hand,
+        handCards: gamesUserInstance.hand,
         tableData: tableInfo,
         isUserTurn,
         gameId: gameInstance.id,
@@ -623,6 +625,43 @@ export default function games(db) {
       // update the game
       const updateResult = await updateGameAndGamesUsersTable(gameData, db);
       console.log('update result is', updateResult);
+
+      // if there is a winner, find the winner's name and send it to response
+      if (updateResult.winnerUserId) {
+        const winnerInstance = db.User.findOne({
+          where: {
+            id: updateResult.winnerId,
+          },
+        });
+
+        res.send({ winnerName: winnerInstance.username });
+        return;
+      }
+
+      // if there is a tie, find the tied players' names and send it to response
+      if (updateResult.userIdsWhoTied) {
+        const tiedPlayersInstances = db.User.findAll({
+          where: {
+            id: [...updateResult.userIdsWhoTied],
+          },
+        });
+
+        const tiedPlayersNames = [];
+
+        for (let i = 0; i < tiedPlayersInstances.length; i += 1) {
+          tiedPlayersNames.push(tiedPlayersInstances[i].username);
+        }
+
+        res.send({ tiedPlayersNames });
+        return;
+      }
+
+      // if there is a next player, send response that it is the next player's turn
+      if (updateResult.nextPlayerId) {
+        console.log('send response that it is the next player turn');
+
+        res.send({ isNextPlayerTurn: true });
+      }
     } catch (error) {
       console.log('play cards error: ', error);
       // send error to browser

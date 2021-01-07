@@ -71,6 +71,9 @@ const displayUserSessionInfo = (username) => {
 
 // display the message of which player's turn
 const displayMessage = (gameData) => {
+  // empty previous html in messageCol
+  messageCol.innerHTML = '';
+
   const messageEl = document.createElement('span');
 
   if (gameData.username !== gameData.currentPlayerUsername) {
@@ -85,6 +88,9 @@ const displayMessage = (gameData) => {
 
 // display the number of cards left in the draw pile
 const displayDrawPileSize = (drawPileSize) => {
+  // empty previous html in drawPileCol
+  drawPileCol.innerHTML = '';
+
   const drawPileSizeEl = document.createElement('span');
 
   drawPileSizeEl.innerHTML = `cards in draw pile: ${drawPileSize}`;
@@ -95,6 +101,9 @@ const displayDrawPileSize = (drawPileSize) => {
 
 // display the number of cards left in the draw pile
 const displayDiscardPileCard = (discardPileCard) => {
+  // empty previous html in discardPileCardCol
+  discardPileCardCol.innerHTML = '';
+
   const discardPileCardEl = document.createElement('span');
 
   discardPileCardEl.innerHTML = `discardPileCard: ${discardPileCard.name} of ${discardPileCard.suit}`;
@@ -105,6 +114,34 @@ const displayDiscardPileCard = (discardPileCard) => {
 
 // display the current game statistics
 const displayGameStats = (data) => {
+  // empty previous html in gameStatsTableContainer
+  gameStatsTableContainer.innerHTML = '';
+
+  // create the display for the game stats table headings
+  const headingRow = document.createElement('div');
+  headingRow.classList.add('row');
+
+  const usernameHeadingCol = document.createElement('div');
+  usernameHeadingCol.classList.add('col-7', 'table-col');
+
+  const handSizeHeadingCol = document.createElement('div');
+  handSizeHeadingCol.classList.add('col-5', 'table-col');
+
+  // create elements to contain the game statistics content
+  const usernameHeadingEl = document.createElement('h5');
+  const handSizeHeadingEl = document.createElement('h5');
+
+  // add the game statistics content
+  usernameHeadingEl.innerHTML = 'Username';
+  handSizeHeadingEl.innerHTML = 'Hand Size';
+
+  // append elements
+  usernameHeadingCol.append(usernameHeadingEl);
+  handSizeHeadingCol.append(handSizeHeadingEl);
+  headingRow.append(usernameHeadingCol, handSizeHeadingCol);
+  gameStatsTableContainer.append(headingRow);
+
+  // create the display for the game stats table info
   for (let i = 0; i < data.length; i += 1) {
     // create the bootstrap rows and columns
     const row = document.createElement('div');
@@ -181,6 +218,12 @@ const selectOrUnselectCardToPlay = (cardEl, cardToPlay) => {
 
 // display cards
 const displayCards = (playerHand) => {
+  // empty the cardsToPlay array
+  cardsToPlay.splice(0, cardsToPlay.length);
+
+  // empty previous html in playerHandRow
+  playerHandRow.innerHTML = '';
+
   for (let i = 0; i < playerHand.length; i += 1) {
     const cardEl = makeCard(playerHand[i]);
 
@@ -213,6 +256,35 @@ const handlePlayCardsBtnClick = (gameId) => function () {
       if (typeof res.data === 'string') {
         const invalidMsg = res.data;
         createAndDisplayInvalidMsgModal(invalidMsg);
+      }
+
+      // if there is a next player,
+      // make request for all items for gameplay of the ongoing game and display them
+      if (res.data.isNextPlayerTurn === true) {
+        console.log('get next turn game data');
+        axios.get('/games/one')
+          .then((secondRes) => {
+            const gameData = secondRes.data;
+
+            // display gameplay elements
+            displayMessage(gameData);
+            displayDrawPileSize(gameData.drawPileSize);
+            displayDiscardPileCard(gameData.discardPileCard);
+            displayGameStats(gameData.tableData);
+            displayCards(gameData.handCards);
+
+            // remove display of play cards btn if it is not the user's turn, vice versa
+            if (gameData.isUserTurn === false) {
+              playCardsBtn.classList.add('remove-display');
+            } else {
+              // will not remove anything if this class was not added previously
+              playCardsBtn.classList.remove('remove-display');
+            }
+          })
+          .catch((error) => {
+            // handle error
+            console.log('get game error', error);
+          });
       }
     })
     .catch((error) => {
@@ -249,6 +321,5 @@ axios.get('/games/one')
   .catch((error) => {
     // handle error
     console.log('get game error', error);
+    // window.location = 'login';
   });
-
-console.log('hello');
