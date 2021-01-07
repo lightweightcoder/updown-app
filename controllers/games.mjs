@@ -95,6 +95,7 @@ const updateGameWithWinner = async (winnerUserId, gamesUsersData, db) => {
  * @param {object} db - give access to models to update the database
  */
 const updateGameAndGamesUsersTable = async (gameData, db) => {
+  console.log('in update game and games users table fn');
   // store the keys in variables
   const {
     userId, drawPile, gamesUsersData, cardsToPlay,
@@ -150,6 +151,7 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
     return { winnerUserId };
   }
 
+  console.log('check who next player is');
   // check who the next player is, and use top card of drawPile as discard pile card if needed
   // -------------------------------------------------------------------------------
   // to set the next player's id
@@ -157,14 +159,15 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
 
   // if nextPlayerId === null, it means a next player has not been found
   while (nextPlayerId === null && drawPile.length > 0) {
+    console.log('finding next player in while loop');
     // to track number of players that skipped,
     // counting from player corresponding to nextPlayerIndex
     let timesSkipped = 0;
 
     // exit loop if every player has skipped or a next player has been found
-    while (timesSkipped < gamesUsersData.length && nextPlayerId !== null) {
-    // if the potentialNextPlayerIndex exceeds the available indexes of gamesUsersData,
-    // reset potentialNextPlayerIndex to 0
+    while (timesSkipped < gamesUsersData.length && nextPlayerId === null) {
+      // if the potentialNextPlayerIndex exceeds the available indexes of gamesUsersData,
+      // reset potentialNextPlayerIndex to 0
       if (potentialNextPlayerIndex === gamesUsersData.length) {
         potentialNextPlayerIndex = 0;
       }
@@ -180,15 +183,17 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
         // if card meets criteria to be playable
         // eslint-disable-next-line max-len
         if (cardBeingChecked.rank === discardPileCard.rank || cardBeingChecked.rank === discardPileCard.rank + 1 || cardBeingChecked.rank === discardPileCard.rank - 1 || (cardBeingChecked.rank === 1 && discardPileCard.rank === 13) || (cardBeingChecked.rank === 13 && discardPileCard.rank === 1)) {
-        // this potential next player who has a valid card is confirmed the next player
-        // this will cause the while loop to stop
+          // this potential next player who has a valid card is confirmed the next player
+          // this will cause the while loop to stop
           nextPlayerId = gamesUsersData[potentialNextPlayerIndex].userId;
+          console.log('found next player id!', nextPlayerId);
         }
       }
 
       // if the next player has not been found, skip once.
       if (nextPlayerId === null) {
         timesSkipped += 1;
+        console.log('timesSkipped', timesSkipped);
         potentialNextPlayerIndex += 1;
       }
     }
@@ -196,6 +201,7 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
     // if the next player has not been found, and every player has skipped,
     // use top card of drawPile as discard pile card and check again in next iteration of while loop
     if (nextPlayerId === null && timesSkipped === gamesUsersData.length) {
+      console.log('use top card of draw pile as discard pile card');
       discardPileCard = drawPile.pop();
     }
   }
@@ -207,6 +213,7 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
   const handslength = [];
 
   if (nextPlayerId === null && drawPile.length === 0) {
+    console.log('next player is not found and draw pile is empty');
     // find the hand lengths of all the players
     for (let i = 0; i < gamesUsersData.length; i += 1) {
       handslength.push(gamesUsersData[i].hand.length);
@@ -283,8 +290,36 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
    * if code reaches here, the next player is found. Update the game data in DB.
    * ---------------------------------------------------------------------------
    */
+  // update the players' hands in gamesUsers table
+  for (let i = 0; i < gamesUsersData.length; i += 1) {
+    console.log('gamesUserData is', gamesUsersData[i]);
+    // eslint-disable-next-line no-await-in-loop
+    await db.GamesUser.update(
+      {
+        hand: gamesUsersData[i].hand,
+      },
+      {
+        where: {
+          id: gamesUsersData[i].id,
+        },
+      },
+    );
+  }
 
-  // update the database
+  // update the discard pile card and current player turn in games table
+  await db.Game.update(
+    {
+      discardPileCard,
+      currentPlayerId: nextPlayerId,
+    },
+    {
+      where: {
+        id: gamesUsersData[0].gameId,
+      },
+    },
+  );
+
+  return { nextPlayerId };
 };
 
 /*
@@ -562,7 +597,7 @@ export default function games(db) {
        * if code reaches here, validations are successful. Update the game.
        * ------------------------------------------------------------------
        */
-
+      console.log('validations success');
       // assign the gamesUsers table data to a new array
       // so we will not do a 'manual' update to the gamesUsers model instances
       const gamesUsersData = [];
@@ -586,7 +621,8 @@ export default function games(db) {
       };
 
       // update the game
-      await updateGameAndGamesUsersTable(gameData, db);
+      const updateResult = await updateGameAndGamesUsersTable(gameData, db);
+      console.log('update result is', updateResult);
     } catch (error) {
       console.log('play cards error: ', error);
       // send error to browser
