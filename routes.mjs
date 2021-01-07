@@ -64,4 +64,7 @@ export default function routes(app) {
 
   // update game when player plays cards
   app.put('/games/:id/playcards', checkAuth, GamesController.playCards);
+
+  // logout a user
+  app.get('/logout', UsersController.logout);
 }

@@ -107,5 +107,17 @@ export default function users(db) {
     }
   };
 
-  return { login, register };
+  const logout = async (req, res) => {
+    try {
+      // clear cookies
+      res.clearCookie('userId');
+      res.clearCookie('loggedInHash');
+
+      res.redirect('/login');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return { login, register, logout };
 }

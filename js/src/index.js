@@ -57,16 +57,15 @@ const createAndDisplayInvalidMsgModal = (message) => {
 // display the user's info and logout btn
 const displayUserSessionInfo = (username) => {
   const welcomeMsgEl = document.createElement('span');
-  const logoutBtn = document.createElement('button');
+  const logoutAnchor = document.createElement('a');
 
   welcomeMsgEl.innerHTML = `welcome back <b>${username}</b>`;
-  logoutBtn.innerText = 'logout';
 
-  // event listner for logout btn
-  // logoutBtn.addEventListener('click', handleLogoutBtnClick);
+  logoutAnchor.innerText = 'logout';
+  logoutAnchor.href = '/logout';
 
   // append elements
-  sessionCol.append(welcomeMsgEl, logoutBtn);
+  sessionCol.append(welcomeMsgEl, logoutAnchor);
 };
 
 // display the message of which player's turn
