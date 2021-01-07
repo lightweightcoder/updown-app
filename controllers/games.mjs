@@ -389,6 +389,13 @@ export default function games(db) {
     console.log('post request to create game came in');
 
     try {
+      // redirect user to gameplay page if he or she alreadyhas an ongoing game
+      if (req.user.hasOngoingGame === true) {
+        res.redirect('/');
+
+        return;
+      }
+
       // get user ids of the players
       let { playerIds } = req.body;
       const loggedInUserId = req.user.id;
@@ -698,6 +705,44 @@ export default function games(db) {
     }
   };
 
+  // cancel an ongoing game for all players
+  const cancel = async (req, res) => {
+    console.log('get request to cancel an ongoing game');
+
+    try {
+      // get the game id
+      const gameId = req.params.id;
+      console.log('gameid', gameId);
+
+      // find the ongoing game data, gameUser data and players data
+      const gameInstance = await db.Game.findOne({
+        where: {
+          id: gameId,
+        },
+        include: db.User,
+      });
+
+      // update game status to not ongoing
+      await gameInstance.update({ isOngoing: false });
+
+      // store the players user instances and gamesUser instances
+      const userInstances = gameInstance.users;
+
+      // update users hasOngoingGame status to false
+      for (let i = 0; i < userInstances.length; i += 1) {
+        // eslint-disable-next-line no-await-in-loop
+        await userInstances[i].update({ hasOngoingGame: false });
+      }
+
+      // redirect to home page
+      res.redirect('/home');
+    } catch (error) {
+      console.log('cancel game error: ', error);
+      // send error to browser
+      res.status(500).send(error);
+    }
+  };
+
   // return all functions we define in an object
   // refer to the routes file above to see this used
   return {
@@ -705,5 +750,6 @@ export default function games(db) {
     create,
     show,
     playCards,
+    cancel,
   };
 }

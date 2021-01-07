@@ -73,4 +73,7 @@ export default function routes(app) {
 
   // logout a user
   app.get('/logout', UsersController.logout);
+
+  // cancel a game
+  app.get('/games/:id/cancel', checkAuth, GamesController.cancel);
 }

@@ -10,6 +10,7 @@ const discardPileCardCol = document.getElementById('discardPileCard-col');
 const gameStatsTableContainer = document.getElementById('gameStatsTable-cont');
 const playerHandRow = document.getElementById('playerHand-row');
 const playCardsBtn = document.getElementById('playCards-btn');
+const cancelGameAnchor = document.getElementById('cancel-game-anchor');
 
 // array to store user's cards to send to the discard pile
 const cardsToPlay = [];
@@ -38,6 +39,11 @@ const createAndDisplayEndGameModal = (data) => {
   // if input is a winner name
   if (data.winnerName) {
     message = `Congratulations to <b>${data.winnerName}</b> on winning!`;
+  }
+
+  // if input is an array of tied player names
+  if (data.tiedPlayersNames) {
+    message = `Congratulations to <b>${data.tiedPlayersNames.join(' & ')}</b> on tieing!`;
   }
 
   // html to create the modal
@@ -107,6 +113,7 @@ const createAndDisplayInvalidMsgModal = (message) => {
   // show the modal
   modal.show();
 };
+
 // display the user's info and logout btn
 const displayUserSessionInfo = (username) => {
   const welcomeMsgEl = document.createElement('span');
@@ -339,11 +346,20 @@ const handlePlayCardsBtnClick = (gameId) => function () {
           });
       }
 
+      // if there is a winner, create an end game modal
       if (res.data.winnerName) {
         console.log('winnerName is', res.data.winnerName);
 
         // create an end game modal with the winner's name
         createAndDisplayEndGameModal({ winnerName: res.data.winnerName });
+      }
+
+      // if there is a tie, create an end game modal
+      if (res.data.tiedPlayersNames) {
+        console.log('tiedPlayersNames are', res.data.tiedPlayersNames);
+
+        // create an end game modal with the tied players' names
+        createAndDisplayEndGameModal({ tiedPlayersNames: res.data.tiedPlayersNames });
       }
     })
     .catch((error) => {
@@ -357,6 +373,9 @@ const handlePlayCardsBtnClick = (gameId) => function () {
 axios.get('/games/one')
   .then((res) => {
     const gameData = res.data;
+
+    // add link to cancel game btn
+    cancelGameAnchor.href = `games/${gameData.gameId}/cancel`;
 
     // display gameplay elements
     displayUserSessionInfo(gameData.username);
