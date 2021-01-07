@@ -14,25 +14,75 @@ const playCardsBtn = document.getElementById('playCards-btn');
 // array to store user's cards to send to the discard pile
 const cardsToPlay = [];
 
-// modal to display messages
-let modalContainer = null;
+// modal to display invalid messages
+let invalidMsgModalContainer = null;
+
+// modal to display end game messages and links
+let endGameModalContainer = null;
 
 // helper functions ============================================
+/**
+ * create and display a modal to show at the end of a game
+ * @param {object} data - containing either a winnerName string or tied player names array
+ */
+const createAndDisplayEndGameModal = (data) => {
+  // if the modal has been created before, remove it first
+  if (endGameModalContainer !== null) {
+    endGameModalContainer.remove();
+  }
+
+  endGameModalContainer = document.createElement('div');
+
+  let message;
+
+  // if input is a winner name
+  if (data.winnerName) {
+    message = `Congratulations to <b>${data.winnerName}</b> on winning!`;
+  }
+
+  // html to create the modal
+  endGameModalContainer.innerHTML = `
+    <div class="modal fade" id="endGameModalContainer" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+            <p>${message}</p>
+          </div>
+          <div class="modal-footer">
+            <a class="btn btn-primary" href="/home" role="button">Back to Home</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.append(endGameModalContainer);
+
+  // eslint-disable-next-line no-undef
+  const modal = new bootstrap.Modal(document.querySelector('#endGameModal'), {
+    keyboard: false,
+    backdrop: 'static',
+  });
+
+  // show the modal
+  modal.show();
+};
+
 // create and display a modal with an invalid message
 const createAndDisplayInvalidMsgModal = (message) => {
   // if the modal has been created before, remove it first
-  if (modalContainer !== null) {
-    modalContainer.remove();
+  if (invalidMsgModalContainer !== null) {
+    invalidMsgModalContainer.remove();
   }
-  modalContainer = document.createElement('div');
+  invalidMsgModalContainer = document.createElement('div');
 
   // html to create the modal
-  modalContainer.innerHTML = `
-    <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  invalidMsgModalContainer.innerHTML = `
+    <div class="modal fade" id="invalidMsgModal" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="staticBackdropLabel">OH NO</h5>
+            <h5 class="modal-title">OH NO</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -46,10 +96,13 @@ const createAndDisplayInvalidMsgModal = (message) => {
     </div>
   `;
 
-  document.body.append(modalContainer);
+  document.body.append(invalidMsgModalContainer);
 
   // eslint-disable-next-line no-undef
-  const modal = new bootstrap.Modal(document.querySelector('.modal'));
+  const modal = new bootstrap.Modal(document.querySelector('#invalidMsgModal'), {
+    keyboard: false,
+    backdrop: 'static',
+  });
 
   // show the modal
   modal.show();
@@ -288,6 +341,9 @@ const handlePlayCardsBtnClick = (gameId) => function () {
 
       if (res.data.winnerName) {
         console.log('winnerName is', res.data.winnerName);
+
+        // create an end game modal with the winner's name
+        createAndDisplayEndGameModal({ winnerName: res.data.winnerName });
       }
     })
     .catch((error) => {

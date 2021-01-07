@@ -36,9 +36,15 @@ export default function routes(app) {
 
   // home page
   app.get('/home', checkAuth, (req, res) => {
-    console.log('render home page');
+    // redirect user to gameplay page if user has an ongoing game
+    if (req.user.hasOngoingGame === true) {
+      console.log('user has ongoing game, redirecting to gameplay page...');
+      res.redirect('/');
+    } else {
+      console.log('render home page');
 
-    res.render('home');
+      res.render('home');
+    }
   });
 
   // create game page
