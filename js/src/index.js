@@ -62,10 +62,11 @@ const createAndDisplayEndGameModal = (data) => {
     </div>
   `;
 
+  // append modal to body
   document.body.append(endGameModalContainer);
 
   // eslint-disable-next-line no-undef
-  const modal = new bootstrap.Modal(document.querySelector('#endGameModal'), {
+  const modal = new bootstrap.Modal(document.querySelector('#endGameModalContainer'), {
     keyboard: false,
     backdrop: 'static',
   });
