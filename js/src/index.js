@@ -236,11 +236,14 @@ const makeCard = (cardData) => {
   const nameEl = document.createElement('div');
   nameEl.innerText = cardData.name;
 
+  const cardImageEl = document.createElement('img');
+  cardImageEl.src = cardData.imgUrl;
+  cardImageEl.classList.add('img-fluid', 'border', 'rounded', 'card-img');
+
   const cardEl = document.createElement('div');
   cardEl.classList.add('card', 'col-3', 'align-items-center', 'col-md-2');
 
-  cardEl.appendChild(nameEl);
-  cardEl.appendChild(suitEl);
+  cardEl.append(cardImageEl);
 
   return cardEl;
 };
@@ -263,6 +266,7 @@ const selectOrUnselectCardToPlay = (cardEl, cardToPlay) => {
 
         // remove the card border display to let player know card is unselected
         cardEl.classList.remove('select-card-border');
+        cardEl.getElementsByTagName('img')[0].classList.remove('select-card-img-border');
       }
     }
   }
@@ -273,6 +277,7 @@ const selectOrUnselectCardToPlay = (cardEl, cardToPlay) => {
 
     // display the card border to let player know card is selected
     cardEl.classList.add('select-card-border');
+    cardEl.getElementsByTagName('img')[0].classList.add('select-card-img-border');
   }
 };
 

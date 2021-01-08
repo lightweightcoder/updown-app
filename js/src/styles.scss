@@ -19,17 +19,23 @@ body {
 
 .card {
   margin: 2px;
-  padding: 2% 4%;
   text-align: center;
   border-radius: 8px;
   border-width: 4px;
   border-color: transparent;
-  animation: flipInY;
-  animation-duration: 1s;
 }
 
 .select-card-border {
   border-color: blue;
+}
+
+.card-img {
+  border-color: transparent !important;
+  border-width: 2px !important;
+}
+
+.select-card-img-border {
+  border-color: blue !important;
 }
 
 // to remove display
