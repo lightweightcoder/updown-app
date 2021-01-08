@@ -60,6 +60,19 @@ const updateGameWithWinner = async (winnerUserId, gamesUsersData, db) => {
     console.log('gameId', gameId);
     console.log('winnerUserId is', winnerUserId);
 
+    // update the user's hand in gamesUsers table
+    await db.GamesUser.update(
+      {
+        hand: [],
+      },
+      {
+        where: {
+          gameId,
+          userId: winnerUserId,
+        },
+      },
+    );
+
     // update winner and status of game in games table
     await db.Game.update(
       {
