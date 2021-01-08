@@ -321,7 +321,7 @@ const handlePlayCardsBtnClick = (gameId) => function () {
       // make request for all items for gameplay of the ongoing game and display them
       if (res.data.isNextPlayerTurn === true) {
         console.log('get next turn game data');
-        axios.get('/games/one')
+        axios.get('/games/ongoing')
           .then((secondRes) => {
             const gameData = secondRes.data;
 
@@ -370,7 +370,7 @@ const handlePlayCardsBtnClick = (gameId) => function () {
 
 // game initialisation =============
 // make request for all items for gameplay of the ongoing game
-axios.get('/games/one')
+axios.get('/games/ongoing')
   .then((res) => {
     const gameData = res.data;
 
