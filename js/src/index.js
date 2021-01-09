@@ -10,7 +10,7 @@ const discardPileCardCol = document.getElementById('discardPileCard-col');
 const gameStatsTableContainer = document.getElementById('gameStatsTable-cont');
 const playerHandRow = document.getElementById('playerHand-row');
 const playCardsBtn = document.getElementById('playCards-btn');
-const cancelGameAnchor = document.getElementById('cancel-game-anchor');
+const cancelGameForm = document.getElementById('cancel-game-form');
 
 // array to store user's cards to send to the discard pile
 const cardsToPlay = [];
@@ -374,8 +374,8 @@ axios.get('/games/ongoing')
     const gameData = res.data;
 
     // add link to cancel game btn
-    // cancelGameAnchor.href = `games/${gameData.gameId}/cancel`;
-    cancelGameAnchor.action = `games/${gameData.gameId}/cancel?_method=PUT`;
+    cancelGameForm.action = `games/${gameData.gameId}/cancel?_method=PUT`;
+
     // display gameplay elements
     displayUserSessionInfo(gameData.username);
     displayMessage(gameData);
