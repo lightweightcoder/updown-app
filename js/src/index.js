@@ -374,8 +374,8 @@ axios.get('/games/ongoing')
     const gameData = res.data;
 
     // add link to cancel game btn
-    cancelGameAnchor.href = `games/${gameData.gameId}/cancel`;
-
+    // cancelGameAnchor.href = `games/${gameData.gameId}/cancel`;
+    cancelGameAnchor.action = `games/${gameData.gameId}/cancel?_method=PUT`;
     // display gameplay elements
     displayUserSessionInfo(gameData.username);
     displayMessage(gameData);
