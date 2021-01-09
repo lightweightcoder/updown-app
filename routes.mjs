@@ -43,7 +43,9 @@ export default function routes(app) {
     } else {
       console.log('render home page');
 
-      res.render('home');
+      const { username } = req.user;
+
+      res.render('home', { username });
     }
   });
 
