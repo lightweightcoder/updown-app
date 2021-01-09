@@ -164,12 +164,13 @@ const displayDiscardPileCard = (discardPileCard) => {
   // empty previous html in discardPileCardCol
   discardPileCardCol.innerHTML = '';
 
-  const discardPileCardEl = document.createElement('span');
+  const discardPileCardImgEl = document.createElement('img');
 
-  discardPileCardEl.innerHTML = `discardPileCard: ${discardPileCard.name} of ${discardPileCard.suit}`;
+  discardPileCardImgEl.src = discardPileCard.imgUrl;
+  discardPileCardImgEl.classList.add('img-fluid', 'border', 'rounded', 'card-img');
 
   // append elements
-  discardPileCardCol.append(discardPileCardEl);
+  discardPileCardCol.append(discardPileCardImgEl);
 };
 
 // display the current game statistics
@@ -229,19 +230,12 @@ const displayGameStats = (data) => {
 
 // make a card display
 const makeCard = (cardData) => {
-  const suitEl = document.createElement('div');
-
-  suitEl.innerText = cardData.suit;
-
-  const nameEl = document.createElement('div');
-  nameEl.innerText = cardData.name;
-
   const cardImageEl = document.createElement('img');
   cardImageEl.src = cardData.imgUrl;
   cardImageEl.classList.add('img-fluid', 'border', 'rounded', 'card-img');
 
   const cardEl = document.createElement('div');
-  cardEl.classList.add('card', 'col-3', 'align-items-center', 'col-md-2');
+  cardEl.classList.add('col-3', 'col-md-2');
 
   cardEl.append(cardImageEl);
 
@@ -265,7 +259,6 @@ const selectOrUnselectCardToPlay = (cardEl, cardToPlay) => {
         i -= 1; // account for the decrease in array length
 
         // remove the card border display to let player know card is unselected
-        cardEl.classList.remove('select-card-border');
         cardEl.getElementsByTagName('img')[0].classList.remove('select-card-img-border');
       }
     }
