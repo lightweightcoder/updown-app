@@ -235,7 +235,7 @@ const makeCard = (cardData) => {
   cardImageEl.classList.add('img-fluid', 'border', 'rounded', 'card-img');
 
   const cardEl = document.createElement('div');
-  cardEl.classList.add('col-3', 'col-md-2');
+  cardEl.classList.add('col-4', 'col-sm-3', 'col-md-2');
 
   cardEl.append(cardImageEl);
 
