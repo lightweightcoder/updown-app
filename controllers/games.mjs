@@ -333,9 +333,10 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
       }
     }
 
-    // update the discard pile card and current player turn in games table
+    // update the drawPile, discard pile card and current player turn in games table
     await db.Game.update(
       {
+        drawPile,
         discardPileCard,
         currentPlayerId: nextPlayerId,
       },
