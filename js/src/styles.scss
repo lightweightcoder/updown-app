@@ -1,20 +1,52 @@
+$border-color: rgb(221, 221, 221);
+$font-color: white;
+
 body {
-  background-color: pink;
+  background-color: rgb(32, 32, 32);
+  color: $font-color;
 }
 
-#game-title {
-  text-align: center;
+#session-col {
+  font-size: 0.8em;
+
+  a {
+    color: red;
+  }
 }
 
 #gameStatsTable-cont {
+  .row {
+    background: rgba(0, 0, 0, 0.7);
+  }
+
   h5,
   p {
+    margin: 0;
     text-align: center;
+    color: $font-color;
   }
 
   .table-col {
-    border-style: solid;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    border-style: ridge;
+    border-color: $border-color;
   }
+}
+
+#discardPile-container {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#playerHand-background-border {
+  background: linear-gradient(to right, red, rgb(237, 240, 76));
+  padding: 3px;
+}
+
+#playerHand-background {
+  background: rgb(15, 143, 4);
+  padding: 1rem;
 }
 
 #discardPileCard-heading {
@@ -42,4 +74,13 @@ body {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: 50% 50%;
+}
+
+#playerHand-container {
+  height: 180px;
+}
+
+#cancel-game-form,
+#playCards-btn {
+  margin-top: 10px;
 }

@@ -26,63 +26,6 @@
       </div>
     </div>
 
-    <!-- game title -->
-    <div class="container">
-      <div class="row">
-        <div class="col d-flex justify-content-center">
-          <h1 id="game-title">UpDown</h1>
-        </div>
-      </div>
-    </div>
-
-    <!-- messages on game state -->
-    <div class="container">
-      <div class="row">
-        <div class="col" id="message-col"></div>
-      </div>
-    </div>
-
-    <!-- draw pile -->
-    <div class="container">
-      <div class="row">
-        <div class="col-12" id="drawPile-col"></div>
-      </div>
-    </div>
-
-    <!-- discard pile -->
-    <div class="container">
-      <div class="row">
-        <div class="col-12">
-          <h6 id="discardPileCard-heading">discard pile</h6>
-        </div>
-      </div>
-      <div class="row justify-content-center">
-        <div class="col-5 col-sm-4 col-md-3" id="discardPileCard-col"></div>
-      </div>
-    </div>
-
-    <!-- user's cards -->
-    <div class="container">
-      <!-- cards -->
-      <div class="row">
-        <div class="col-12">
-          <!-- set a max size of the container storing the cards -->
-          <div class="container overflow-auto">
-            <div class="row" id="playerHand-row"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- submit cards btn -->
-      <div class="row">
-        <div class="col d-flex justify-content-end">
-          <button type="button" class="btn btn-primary" id="playCards-btn">
-            play cards
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- table of number of cards in hand for each player -->
     <div class="container-fluid" id="hand-size-table-img">
       <div class="row d-flex justify-content-center">
@@ -92,13 +35,55 @@
       </div>
     </div>
 
-    <!-- cancel game -->
     <div class="container">
       <div class="row">
-        <div class="col d-flex justify-content-end">
+        <!-- messages on game state -->
+        <div class="col-6" id="message-col"></div>
+        <!-- draw pile -->
+        <div class="col-6 d-flex justify-content-end" id="drawPile-col"></div>
+      </div>
+    </div>
+
+    <!-- discard pile -->
+    <div class="container" id="discardPile-container">
+      <div class="row">
+        <div class="col-12">
+          <h6 id="discardPileCard-heading">discard pile</h6>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-4 col-sm-3 col-md-2" id="discardPileCard-col"></div>
+      </div>
+    </div>
+
+    <!-- user's cards -->
+    <div class="container">
+      <!-- cards -->
+      <div class="row">
+        <div class="col-12">
+          <div id="playerHand-background-border">
+            <div id="playerHand-background">
+              <!-- set a max size of the container storing the cards -->
+              <div class="container overflow-auto" id="playerHand-container">
+                <div class="row" id="playerHand-row"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- submit cards and cancel game btn -->
+      <div class="row d-flex justify-content-between">
+        <div class="d-grid gap-2 col-3 mx-auto">
           <form method="POST" id="cancel-game-form">
-            <input type="submit" value="Cancel Game" class="btn btn-primary" />
+            <input type="submit" value="cancel game" class="btn btn-danger" />
           </form>
+        </div>
+
+        <div class="d-grid gap-2 col-5 mx-auto">
+          <button type="button" class="btn btn-success" id="playCards-btn">
+            play cards
+          </button>
         </div>
       </div>
     </div>
