@@ -338,6 +338,42 @@ const handlePlayCardsBtnClick = (gameId) => function () {
               // will not remove anything if this class was not added previously
               playCardsBtn.classList.remove('remove-display');
             }
+
+            // if its not user turn, add a countdown to refresh the page every 5 seconds
+            if (gameData.isUserTurn === false) {
+              const refreshContent = setInterval(() => {
+                axios.get('/games/ongoing')
+                  .then((refreshedRes) => {
+                    const refreshedGameData = refreshedRes.data;
+
+                    // display gameplay elements
+                    displayMessage(refreshedGameData);
+                    displayDrawPileSize(refreshedGameData.drawPileSize);
+                    displayDiscardPileCard(refreshedGameData.discardPileCard);
+                    displayGameStats(refreshedGameData.tableData);
+                    displayCards(refreshedGameData.handCards);
+
+                    // remove display of play cards btn if it is not the user's turn, vice versa
+                    // also, remove the the interval to refresh the game data if its the user's turn
+                    if (refreshedGameData.isUserTurn === false) {
+                      playCardsBtn.classList.add('remove-display');
+                    } else {
+                      // will not remove anything if this class was not added previously
+                      playCardsBtn.classList.remove('remove-display');
+
+                      // remove the the interval to refresh the game data
+                      clearInterval(refreshContent);
+                    }
+                  })
+                  .catch((refreshError) => {
+                    // handle error
+                    console.log('get refreshed content error', refreshError);
+
+                    // refresh error might be due to game having a winner/tie so redirect to home
+                    window.location = '/home';
+                  });
+              }, 5000);
+            }
           })
           .catch((error) => {
             // handle error
@@ -397,7 +433,38 @@ axios.get('/games/ongoing')
 
     // if its not user turn, add a countdown to refresh the page every 5 seconds
     if (gameData.isUserTurn === false) {
-      setInterval(() => { window.location = '/'; }, 5000);
+      const refreshContent = setInterval(() => {
+        axios.get('/games/ongoing')
+          .then((refreshedRes) => {
+            const refreshedGameData = refreshedRes.data;
+
+            // display gameplay elements
+            displayMessage(refreshedGameData);
+            displayDrawPileSize(refreshedGameData.drawPileSize);
+            displayDiscardPileCard(refreshedGameData.discardPileCard);
+            displayGameStats(refreshedGameData.tableData);
+            displayCards(refreshedGameData.handCards);
+
+            // remove display of play cards btn if it is not the user's turn, vice versa
+            // also, remove the the interval to refresh the game data if its the user's turn
+            if (refreshedGameData.isUserTurn === false) {
+              playCardsBtn.classList.add('remove-display');
+            } else {
+              // will not remove anything if this class was not added previously
+              playCardsBtn.classList.remove('remove-display');
+
+              // remove the the interval to refresh the game data
+              clearInterval(refreshContent);
+            }
+          })
+          .catch((refreshError) => {
+            // handle error
+            console.log('get refreshed content error', refreshError);
+
+            // refresh error might be due to game having a winner/tie so redirect to home
+            window.location = '/home';
+          });
+      }, 5000);
     }
   })
   .catch((error) => {
