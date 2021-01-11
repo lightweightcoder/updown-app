@@ -29,6 +29,10 @@ a {
   padding-right: 10px;
 }
 
+a {
+  color: red;
+}
+
 h4,
 h5 {
   text-align: center;
