@@ -1,6 +1,26 @@
 $border-color: rgb(221, 221, 221);
 $font-color: white;
 
+/* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 body {
   background-color: rgb(32, 32, 32);
   color: $font-color;
@@ -83,6 +103,7 @@ body {
 #cancel-game-form,
 #playCards-btn {
   margin-top: 10px;
+  margin-bottom: 20px;
 }
 
 .modal {

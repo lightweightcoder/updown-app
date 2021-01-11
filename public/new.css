@@ -1,6 +1,16 @@
+html {
+  height: 100vh;
+}
+
 body {
   padding-top: 20px;
   padding-bottom: 40px;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("/hand-size-table-bg.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  color: white;
 }
 
 #form-container {
@@ -26,7 +36,6 @@ h5 {
 
 .btn {
   margin-top: 10px;
-  margin-left: 10px;
 }
 
 /* for bootstrap col-sm */
