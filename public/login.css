@@ -9,7 +9,7 @@ body {
     url("/up-down-bg.png");
   background-size: cover;
   background-repeat: no-repeat;
-  background-position: 47.9% 50%;
+  background-position: 47.9% 0%;
 }
 
 #form-container {
