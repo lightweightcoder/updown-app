@@ -132,6 +132,8 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
     let potentialNextPlayerIndex;
 
     // find the user and update the user's hand (remove played cards from the hand)
+    // const currentUser = gamesUsersData.find((gamesUser) => gamesUser.userId === userId);
+
     for (let i = 0; i < gamesUsersData.length; i += 1) {
       if (userId === gamesUsersData[i].userId) {
       // set the index of the tentative next player.
@@ -158,7 +160,6 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
         // if user has no card left, he/she wins the game
         if (gamesUsersData[i].hand.length === 0) {
           console.log('user wins!');
-          // display a winner modal
           // set winnerId
           winnerUserId = userId;
         }
