@@ -470,5 +470,4 @@ axios.get('/games/ongoing')
   .catch((error) => {
     // handle error
     console.log('get game error', error);
-    // window.location = '/login';
   });

@@ -131,41 +131,34 @@ const updateGameAndGamesUsersTable = async (gameData, db) => {
     // the potential next player's index in gamesUsersData
     let potentialNextPlayerIndex;
 
-    // find the user and update the user's hand (remove played cards from the hand)
-    // const currentUser = gamesUsersData.find((gamesUser) => gamesUser.userId === userId);
+    // find the user who played the cards
+    const currentUser = gamesUsersData.find((gamesUser) => gamesUser.userId === userId);
 
-    for (let i = 0; i < gamesUsersData.length; i += 1) {
-      if (userId === gamesUsersData[i].userId) {
-      // set the index of the tentative next player.
-        potentialNextPlayerIndex = i + 1;
+    potentialNextPlayerIndex = gamesUsersData.indexOf(currentUser) + 1;
 
-        // remove played cards from the user's hand
-        for (let j = 0; j < cardsToPlay.length; j += 1) {
-          for (let k = 0; k < gamesUsersData[i].hand.length; k += 1) {
-          // if cards name and suit matches, remove it from user's hand
-          // eslint-disable-next-line max-len
-            if ((cardsToPlay[j].name === gamesUsersData[i].hand[k].name) && (cardsToPlay[j].suit === gamesUsersData[i].hand[k].suit)) {
-              gamesUsersData[i].hand.splice(k, 1);
+    // remove played cards from the user's hand
+    for (let i = 0; i < cardsToPlay.length; i += 1) {
+      for (let j = 0; j < currentUser.hand.length; j += 1) {
+        // if cards name and suit matches, remove it from user's hand
+        // eslint-disable-next-line max-len
+        if ((cardsToPlay[i].name === currentUser.hand[j].name) && (cardsToPlay[i].suit === currentUser.hand[j].suit)) {
+          currentUser.hand.splice(j, 1);
 
-              // account for the change in length in cardsToPlay
-              j -= 1;
+          // account for the change in length in cardsToPlay
+          i -= 1;
 
-              // make k large enough to exit the for loop because
-              // there's no need to check for that card anymore
-              k = 1000;
-            }
-          }
+          // make j large enough to exit the for loop because
+          // there's no need to check for that card anymore
+          j = 1000;
         }
-
-        // if user has no card left, he/she wins the game
-        if (gamesUsersData[i].hand.length === 0) {
-          console.log('user wins!');
-          // set winnerId
-          winnerUserId = userId;
-        }
-        // make i large enough to exit the for loop
-        i = 1000;
       }
+    }
+
+    // if user has no card left, he/she wins the game
+    if (currentUser.hand.length === 0) {
+      console.log('user wins!');
+      // set winnerId
+      winnerUserId = userId;
     }
 
     // if user is the winner update the game with a winner and return the winner id
