@@ -21,5 +21,8 @@ Updown is a full stack multiplayer game which uses poker cards, with an intentio
 4. When a player plays a card, the 1st card that the player played will be the new discard pile card.
 
 
+##### Gameplay page
+![gameplay-image](./gameplay-example.PNG)
+
 
 
