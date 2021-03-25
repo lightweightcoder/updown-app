@@ -1,6 +1,9 @@
 # Updown-app
 SWE1 Project 3: full stack game app
 
+## Website
+https://updown-app.herokuapp.com/login
+
 ## Technologies used
 - PostgreSQL, Sequelize, Express, Axios, Webpack, Bootstrap, HTML, CSS, JavaScript  
 
